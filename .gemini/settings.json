@@ -1,0 +1,76 @@
+{
+  "context": {
+    "fileName": "AGENTS.md"
+  },
+  "mcpServers": {
+    "context7": {
+      "enabled": false,
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "CONTEXT7_API_KEY": "api-key"
+      }
+    },
+    "gemini-cli": {
+      "enabled": false,
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "gemini-mcp-tool"
+      ],
+      "env": {}
+    },
+    "linear-server": {
+      "enabled": false,
+      "type": "http",
+      "url": "https://mcp.linear.app/mcp"
+    },
+    "firecrawl": {
+      "enabled": false,
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "firecrawl-mcp"
+      ],
+      "env": {
+        "FIRECRAWL_API_KEY": "api-key"
+      }
+    },
+    "chrome-devtools": {
+      "enabled": false,
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "chrome-devtools-mcp@latest"
+      ],
+      "env": {}
+    },
+    "nx-mcp": {
+      "enabled": false,
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "nx-mcp"
+      ]
+    },
+    "figma": {
+      "enabled": false,
+      "type": "http",
+      "url": "https://mcp.figma.com/mcp"
+    },
+    "angular-cli": {
+      "enabled": false,
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@angular/cli",
+        "mcp"
+      ],
+      "env": {}
+    }
+  },
+  "contextFileName": "AGENTS.md"
+}

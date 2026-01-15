@@ -1,0 +1,8 @@
+@import "tailwindcss" source("./app");
+
+@source "../../../libs/ui";
+@source "../../../libs/shared";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@plugin "tailwindcss-primeui";
