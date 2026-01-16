@@ -91,6 +91,158 @@ import { HeaderComponent } from './header.component';
 
 ---
 
+# MCP Launchpad (Your gateway to ALL MCPs!)
+
+You have access to the MCP Launchpad (`mcpl`), a unified CLI for discovering and executing tools from multiple MCP servers. The user may configure and change their MCP configuration at any time. So if your task requires a tool or functionality outside of your current capabilities, it's critical that you always check the MCP Launchpad for available tools that may be useful.
+
+## Available MCP Servers
+
+| Server | Type | Purpose |
+|--------|------|---------|
+| `primeng` | stdio | PrimeNG component documentation and examples |
+| `context7` | http | Context7 AI-powered documentation |
+| `gemini-cli` | stdio | Google Gemini AI integration |
+| `linear-server` | http | Linear issue tracking integration |
+| `firecrawl` | stdio | Web scraping and crawling |
+| `chrome-devtools` | stdio | Chrome DevTools debugging |
+| `nx-mcp` | stdio | Nx workspace tools and generators |
+| `figma` | http | Figma design integration |
+| `angular-cli` | stdio | Angular CLI and documentation |
+
+## Important: Always Discover Before Calling
+
+Tool names vary between MCP servers. **Never guess tool names** - always discover them first.
+
+If you're unsure of the tool name, **always search first**. The `mcpl search` command is the most efficient way to find relevant tools across all MCP servers.
+
+### Recommended Workflow
+
+1. **Search first** to find the right tool (shows required params):
+   ```bash
+   mcpl search "component"           # Find PrimeNG/Angular components
+   mcpl search "scrape"              # Find firecrawl scraping tools
+   mcpl search "issue"               # Find Linear issue tools
+   ```
+
+2. **Call with required params**:
+   ```bash
+   mcpl call primeng get_component '{"name": "button"}'
+   mcpl call angular-cli list_projects '{}'
+   mcpl call nx-mcp run_generator '{"generator": "@nx/angular:component"}'
+   ```
+
+### Alternative: List Server Tools
+
+If you know which server to use but not the tool name:
+```bash
+mcpl list primeng        # PrimeNG component tools
+mcpl list angular-cli    # Angular CLI tools
+mcpl list nx-mcp         # Nx workspace tools
+mcpl list figma          # Figma design tools
+mcpl list linear-server  # Linear issue tracking
+mcpl list firecrawl      # Web scraping tools
+```
+
+### Get Example Calls
+
+For complex tools, use `inspect --example` to get a ready-to-use example:
+```bash
+mcpl inspect angular-cli search_documentation --example
+mcpl inspect figma get_design_context --example
+mcpl inspect nx-mcp affected --example
+```
+
+## Common Use Cases
+
+### Angular Development
+```bash
+mcpl call angular-cli search_documentation '{"query": "signals"}'
+mcpl call angular-cli get_best_practices '{"workspacePath": "/path/to/angular.json"}'
+mcpl call angular-cli find_examples '{"query": "reactive forms"}'
+```
+
+### PrimeNG Components
+```bash
+mcpl call primeng get_component '{"name": "table"}'
+mcpl call primeng search_components '{"query": "input"}'
+```
+
+### Nx Workspace
+```bash
+mcpl call nx-mcp list_projects '{}'
+mcpl call nx-mcp run_generator '{"generator": "@nx/angular:library", "options": {"name": "shared-ui"}}'
+mcpl call nx-mcp affected '{"target": "test"}'
+```
+
+### Figma Integration
+```bash
+mcpl call figma get_design_context '{"nodeId": "123:456", "fileKey": "abc123"}'
+mcpl call figma get_screenshot '{"nodeId": "123:456", "fileKey": "abc123"}'
+```
+
+### Linear Issues
+```bash
+mcpl call linear-server list_issues '{}'
+mcpl call linear-server create_issue '{"title": "Bug fix", "teamId": "TEAM-1"}'
+```
+
+### Web Scraping (Firecrawl)
+```bash
+mcpl call firecrawl scrape '{"url": "https://example.com"}'
+mcpl call firecrawl crawl '{"url": "https://docs.example.com", "maxDepth": 2}'
+```
+
+## Error Recovery
+
+If a tool call fails, mcpl provides helpful suggestions:
+
+- **Tool not found**: Shows similar tool names from that server
+- **Missing parameters**: Shows required params and an example call
+- **Validation errors**: Shows expected parameter types
+
+### Troubleshooting Commands
+
+```bash
+mcpl verify                 # Test all server connections
+mcpl session status         # Check daemon and server connection status
+mcpl session stop           # Restart daemon (stops current, auto-restarts on next call)
+mcpl config                 # Show current configuration
+mcpl call <server> <tool> '{}' --no-daemon  # Bypass daemon for debugging
+```
+
+### Common Issues
+
+- **Server not connecting**: Run `mcpl verify` to test connections
+- **Stale connections**: Run `mcpl session stop` then retry
+- **Timeout errors**: Server may be slow; increase with `MCPL_CONNECTION_TIMEOUT=120`
+- **HTTP servers (context7, linear, figma)**: Check API keys and network connectivity
+
+## Quick Reference
+
+```bash
+# Show help
+mcpl --help
+
+# Find tools
+mcpl search "<query>"                    # Search all tools (returns 5 by default)
+mcpl search "<query>" --limit 10         # Get more results
+mcpl list                                # List all MCP servers
+mcpl list <server>                       # List tools for a server
+
+# Get tool details
+mcpl inspect <server> <tool>             # Full schema
+mcpl inspect <server> <tool> --example   # Schema + example call
+
+# Execute tools
+mcpl call angular-cli list_projects '{}'
+mcpl call primeng get_component '{"name": "dialog"}'
+mcpl call nx-mcp affected '{"target": "build"}'
+mcpl call figma get_screenshot '{"nodeId": "1:2", "fileKey": "xyz"}'
+
+# Verify servers
+mcpl verify                              # Test all servers are working
+```
+
 ## ⚡ Essential Rules
 
 ### BASE

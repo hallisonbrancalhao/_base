@@ -1,5 +1,3 @@
-
-
 <div style="margin: 2em">
   Maintained by a dedicated team at Google, Angular provides a broad suite of tools, APIs, and
   libraries to simplify and streamline your development workflow. Angular gives you

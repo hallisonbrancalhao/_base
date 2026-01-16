@@ -56,3 +56,6 @@ Thumbs.db
 /.agent/Tasks/PRD*.md
 /.agent/Tasks/BUG*.md
 /.agent/Tasks/TAKS*.md
+
+# Environment Files
+/.env
