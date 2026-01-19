@@ -2,8 +2,10 @@
 
 # Pre-implementation hook: Checks if user prompt indicates implementation intent
 # Returns system reminder to read architecture rules before implementing
+# Also checks for active plans and suggests review before implementation
 
 USER_PROMPT="$CLAUDE_USER_CONTENT"
+PLANS_DIR="${CLAUDE_WORKING_DIRECTORY:-$(pwd)}/.agent/Plans"
 
 # Implementation patterns (case insensitive)
 IMPLEMENTATION_PATTERNS=(
@@ -37,6 +39,31 @@ for pattern in "${IMPLEMENTATION_PATTERNS[@]}"; do
         echo "<system-reminder>"
         echo "IMPLEMENTATION DETECTED - PRE-IMPLEMENTATION CHECKLIST:"
         echo ""
+
+        # Check for active plans
+        PLAN_FILES=$(find "$PLANS_DIR" -maxdepth 1 -name "*.md" -type f 2>/dev/null || echo "")
+        if [ -n "$PLAN_FILES" ]; then
+            echo "ACTIVE PLAN DETECTED"
+            echo "===================="
+            echo "Found plan file(s) in .claude/plans/"
+            echo ""
+            echo "RECOMMENDED: Before implementing, use subagents to review the plan:"
+            echo ""
+            echo "Option 1 - Quick Review (inline):"
+            echo "  Use Task tool with @arch-validator and @code-reviewer agents"
+            echo "  to analyze the plan for architecture compliance."
+            echo ""
+            echo "Option 2 - Full Review (headless):"
+            echo "  Run: .claude/hooks/plan-review.sh"
+            echo "  Reviews are saved in .claude/plans/reviews/"
+            echo ""
+            echo "Plan files found:"
+            echo "$PLAN_FILES" | while read -r f; do echo "  - $(basename "$f")"; done
+            echo ""
+            echo "===================="
+            echo ""
+        fi
+
         echo "Before implementing, you MUST read and follow these architecture files:"
         echo ""
         echo "1. .agent/System/base_rules.md (Core rules)"

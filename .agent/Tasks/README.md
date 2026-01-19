@@ -58,6 +58,68 @@ Don't create PRD for:
 
 ---
 
+## 🔄 Automatic PRD Generation (Plan Mode Integration)
+
+PRDs can be automatically generated from Claude Code's Plan Mode workflow.
+
+### How It Works
+
+```
+User Request → EnterPlanMode → Write Plan → ExitPlanMode
+                                                  ↓
+                                      ┌──────────────────────┐
+                                      │  Automatic Hooks:    │
+                                      │  1. plan-review.sh   │
+                                      │  2. plan-to-prd.sh   │ ← Generates PRD
+                                      │  3. archive-plan.sh  │
+                                      └──────────────────────┘
+                                                  ↓
+                              PRD created in .agent/Tasks/PRD-YYYY-MM-###_name.md
+```
+
+### Plan Structure for Best Results
+
+When using Plan Mode, structure your plan for optimal PRD generation:
+
+```markdown
+# Feature: [Clear Feature Name]
+
+## Scope
+- Scope: [scope-name]
+- Type: feature
+
+## Implementation Plan
+1. [Step 1]
+2. [Step 2]
+
+## Files to Create/Modify
+- libs/[scope]/feature-[name]/src/...
+- libs/[scope]/data-access/src/...
+
+## Acceptance Criteria
+- [ ] Criterion 1
+- [ ] Criterion 2
+```
+
+### Generated PRD Contents
+
+The auto-generated PRD includes:
+- **AI Context Block** - YAML metadata for AI agents
+- **Original Plan** - Preserved in collapsible section
+- **Definition of Done** - Standard checklist from project rules
+- **Test Plan Template** - Coverage targets
+
+### After Generation
+
+1. Review the generated PRD in `.agent/Tasks/`
+2. Fill in missing details (API contracts, specific files)
+3. Update `nx_impact` section with actual libs
+4. Begin implementation following the PRD
+
+> **See also**: `.agent/Plans/README.md` for full workflow documentation
+
+---
+
 ## 📝 PRD Template v2.0 (AI-Optimized)
 
 ```markdown

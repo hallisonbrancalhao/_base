@@ -1,4 +1,5 @@
 {
+  "plansDirectory": ".agent/Plans",
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "hooks": {
     "UserPromptSubmit": [
@@ -7,7 +8,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/pre-implementation-check.sh",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/pre-implementation-check.sh",
             "timeout": 5
           }
         ]
@@ -45,6 +46,26 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/plan-review.sh",
+            "timeout": 120
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/plan-to-prd.sh",
+            "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/archive-plan.sh",
+            "timeout": 30
+          }
+        ]
       }
     ],
     "Stop": [
@@ -65,13 +86,17 @@
       "Read",
       "Edit",
       "Write",
+      "Bash(pnpm *)",
       "Bash(npm *)",
-      "Bash(npx nx *)",
+      "Bash(npx *)",
       "Bash(nx *)",
       "Bash(ng *)",
       "Bash(git *)",
+      "Bash(make *)",
       "Bash(cat *)",
       "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(chmod *)",
       "Bash(grep *)",
       "Bash(find *)",
       "Bash(tree *)",

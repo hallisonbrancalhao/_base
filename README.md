@@ -1,4 +1,135 @@
-## Extras 
+# Project Base
+
+## Quick Start
+
+```bash
+# Start development session (interactive)
+make init
+
+# Or run directly
+.claude/hooks/setup.sh --init
+```
+
+---
+
+## Setup System
+
+The project uses a unified setup script with three modes:
+
+| Mode | Command | Use Case |
+|------|---------|----------|
+| **Init** | `make init` | Developer starting work session |
+| **CI** | `make ci` | CI pipelines, devcontainers |
+| **Maintenance** | `make maintain` | Weekly upkeep, health checks |
+
+### Init Mode (`--init`)
+
+Interactive setup for developers:
+
+```bash
+make init
+# or: .claude/hooks/setup.sh --init
+```
+
+- Validates environment (Node, pnpm versions)
+- Installs dependencies (`pnpm install`)
+- Creates `.env` from `.env.example` (if needed)
+- Starts Docker services (if available)
+- Runs sanity checks (lint, typecheck affected)
+- Displays quick commands summary
+
+### CI Mode (`--init-only`)
+
+Headless setup for automated environments:
+
+```bash
+make ci
+# or: .claude/hooks/setup.sh --init-only
+```
+
+- Auto-detected in CI environments (GitHub Actions, GitLab CI, etc.)
+- Frozen lockfile install (`pnpm install --frozen-lockfile`)
+- Nx cache verification
+- Preflight checks (lint, test, build affected)
+- Exits with status code
+
+### Maintenance Mode (`--maintenance`)
+
+Periodic upkeep tasks:
+
+```bash
+make maintain
+# or: .claude/hooks/setup.sh --maintenance
+```
+
+- Updates dependencies (`pnpm update`)
+- Cleans caches and artifacts
+- Security audit
+- Formats code (`nx format:write`)
+- Full health checks (lint all, test all, build all)
+- Generates maintenance report
+
+### Auto-Detection
+
+Running without flags auto-detects the mode:
+
+```bash
+.claude/hooks/setup.sh  # Auto-detects based on environment
+```
+
+| Environment | Mode |
+|-------------|------|
+| CI (GitHub Actions, GitLab CI, etc.) | `--init-only` |
+| Devcontainer/Codespaces | `--init-only` |
+| Non-interactive terminal | `--init-only` |
+| Local interactive | `--init` |
+
+---
+
+## Makefile Commands
+
+```bash
+make help  # Show all available commands
+```
+
+### Setup
+| Command | Description |
+|---------|-------------|
+| `make init` | Interactive development setup |
+| `make ci` | CI/Headless setup |
+| `make maintain` | Periodic maintenance |
+
+### Development
+| Command | Description |
+|---------|-------------|
+| `make dev` | Start API + Web servers |
+| `make dev-api` | Start API only |
+| `make dev-web` | Start Web only |
+
+### Quality
+| Command | Description |
+|---------|-------------|
+| `make test` | Run tests (affected) |
+| `make lint` | Run lint (affected) |
+| `make typecheck` | TypeScript type check |
+| `make format` | Format code |
+
+### Build
+| Command | Description |
+|---------|-------------|
+| `make build` | Build affected projects |
+| `make build-all` | Build all projects |
+
+### Utilities
+| Command | Description |
+|---------|-------------|
+| `make clean` | Clean dist/ and cache |
+| `make graph` | Open Nx dependency graph |
+| `make status` | Git status + affected projects |
+
+---
+
+## Extras
 
 `.claude/settings.local.json`
 
@@ -14,7 +145,7 @@
 ## Setup CLAUDE.md and AGENTS.mc
 
 ```bash
-bunx @intellectronica/ruler apply
+pnpm dlx @intellectronica/ruler apply
 ```
 
 ## Install extras libs
@@ -53,122 +184,4 @@ mcpl list --refresh
 ```
 
 (Credit: @kenneth-liao)
-
---- 
-
-# NEW PROJECT WORKFLOW (GDS OPTIONAL)
-
-## GSD - (https://github.com/glittercowboy/get-shit-done) 
-
-### Initialize project — use codebase context for planning
-
-```bash
-  /gsd:new-project
-  /clear first → fresh context window
-```
-
-### 1. Start with an idea
-/gsd:new-project
-
-#### 1.5. Research the domain (optional)
-```bash
-/gsd:research-project
-```
-
-### 2. Define requirements
-```bash
-/gsd:define-requirements
-```
-
-### 3. Create roadmap
-```bash
-/gsd:create-roadmap
-```
-
-### 4. Plan and execute phases
-
-```
-/gsd:plan-phase 1      # System creates atomic task plans
-/gsd:execute-phase 1   # Parallel agents execute all plans
-```
-
-Each phase breaks into 2-3 task plans. Each plan runs in a fresh subagent context — 200k tokens purely for implementation, zero degradation. Plans without dependencies run in parallel.
-
-**For single-plan or interactive execution:**
-```
-/gsd:execute-plan      # Run one plan at a time with checkpoints
-```
-
-Use `/gsd:execute-phase` for parallel "walk away" automation (recommended). Use `/gsd:execute-plan` when you need interactive single-plan execution with manual checkpoints.
-
-### 5. Ship and iterate
-
-```
-/gsd:complete-milestone   # Archive v1, prep for v2
-/gsd:add-phase            # Append new work
-/gsd:insert-phase 2       # Slip urgent work between phases
-```
----
-
-## Commands
-
-### Setup
-
-| Command | What it does |
-|---------|--------------|
-| `/gsd:new-project` | Extract your idea through questions, create PROJECT.md |
-| `/gsd:research-project` | Research domain ecosystem (stacks, features, pitfalls) |
-| `/gsd:define-requirements` | Scope v1/v2/out-of-scope requirements |
-| `/gsd:create-roadmap` | Create roadmap with phases mapped to requirements |
-| `/gsd:map-codebase` | Map existing codebase for brownfield projects |
-
-### Execution
-
-| Command | What it does |
-|---------|--------------|
-| `/gsd:plan-phase [N]` | Generate task plans for phase |
-| `/gsd:execute-phase <N>` | Execute all plans in phase with parallel agents |
-| `/gsd:execute-plan` | Run single plan via subagent |
-| `/gsd:progress` | Where am I? What's next? |
-
-### Verification
-
-| Command | What it does |
-|---------|--------------|
-| `/gsd:verify-work [N]` | User acceptance test of phase or plan ¹ |
-
-### Milestones
-
-| Command | What it does |
-|---------|--------------|
-| `/gsd:complete-milestone` | Ship it, prep next version |
-| `/gsd:discuss-milestone` | Gather context for next milestone |
-| `/gsd:new-milestone [name]` | Create new milestone with phases |
-
-### Phase Management
-
-| Command | What it does |
-|---------|--------------|
-| `/gsd:add-phase` | Append phase to roadmap |
-| `/gsd:insert-phase [N]` | Insert urgent work between phases |
-| `/gsd:remove-phase [N]` | Remove future phase, renumber subsequent |
-| `/gsd:discuss-phase [N]` | Gather context before planning |
-| `/gsd:research-phase [N]` | Deep research for unfamiliar domains |
-| `/gsd:list-phase-assumptions [N]` | See what Claude assumes before correcting |
-
-### Session
-
-| Command | What it does |
-|---------|--------------|
-| `/gsd:pause-work` | Create handoff file when stopping mid-phase |
-| `/gsd:resume-work` | Restore from last session |
-
-### Utilities
-
-| Command | What it does |
-|---------|--------------|
-| `/gsd:add-todo [desc]` | Capture idea or task for later |
-| `/gsd:check-todos [area]` | List pending todos, select one to work on |
-| `/gsd:debug [desc]` | Systematic debugging with persistent state |
-| `/gsd:help` | Show all commands and usage guide |
 
