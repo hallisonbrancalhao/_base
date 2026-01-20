@@ -1,7 +1,27 @@
 # Sub-Agent Execution Protocol
 
 > **Primary Agent = Orchestrator Only**
-> All tasks MUST be delegated to specialized sub-agents.
+> All tasks MUST be delegated to specialized sub-agents via the **Task tool**.
+
+---
+
+## Quick Start
+
+### Planning a New Feature
+```
+/plan
+```
+This invokes the planning workflow that uses sub-agents to:
+1. Investigate codebase context
+2. Research UX requirements
+3. Validate architecture
+4. Create PRD in `.agent/Tasks/`
+
+### Implementing an Existing Task
+```
+/task
+```
+This helps implement PRDs from `.agent/Tasks/` following all project patterns.
 
 ---
 
@@ -9,160 +29,252 @@
 
 ```
 .agent/Agents/
-├── README.md              ← YOU ARE HERE
-├── quality/               ← Code quality & validation
-│   ├── @qa-runner.md      ← Tests, build, lint execution
-│   ├── @arch-validator.md ← Architecture compliance
-│   └── @code-reviewer.md  ← Code review & standards
-├── development/           ← Code generation & refactoring
-│   ├── @coder.md          ← Write and refactor code
-│   ├── @test-writer.md    ← Unit/integration tests
-│   └── @docs-writer.md    ← Documentation
-├── automation/            ← DevOps & tooling
-│   ├── @e2e-tester.md     ← Browser E2E testing
-│   ├── @git-operator.md   ← Git operations & commits
-│   └── @nx-operator.md    ← Nx workspace operations
-└── analysis/              ← Research & exploration
-    ├── @explorer.md       ← Codebase exploration
-    └── @debugger.md       ← Issue investigation
+├── README.md                  ← YOU ARE HERE
+├── planning/                  ← Planning & orchestration
+│   └── @task-planner.md       ← Feature planning workflow
+├── design/                    ← UX/UI & brand
+│   ├── @ux-researcher.md      ← User research, personas, journeys
+│   ├── @ui-designer.md        ← UI specs, components, layouts
+│   └── @brand-guardian.md     ← Brand consistency
+├── quality/                   ← Code quality & validation
+│   ├── @qa-runner.md          ← Tests, build, lint execution
+│   ├── @arch-validator.md     ← Architecture compliance
+│   └── @code-reviewer.md      ← Code review & standards
+├── development/               ← Code generation & refactoring
+│   ├── @coder.md              ← Write and refactor code
+│   ├── @frontend-developer.md ← Angular implementation
+│   ├── @backend-architect.md  ← NestJS API implementation
+│   ├── @test-writer.md        ← Unit/integration tests
+│   └── @docs-writer.md        ← Documentation
+├── automation/                ← DevOps & tooling
+│   ├── @e2e-tester.md         ← Browser E2E testing
+│   ├── @git-operator.md       ← Git operations & commits
+│   └── @nx-operator.md        ← Nx workspace operations
+└── analysis/                  ← Research & exploration
+    ├── @explorer.md           ← Codebase exploration
+    └── @debugger.md           ← Issue investigation
 ```
 
 ---
 
-## Invocation Pattern
+## How to Invoke Sub-Agents
+
+Use the **Task tool** to spawn sub-agents. Each agent runs with its own context.
+
+### Parallel Execution
+When tasks are independent, launch multiple agents simultaneously:
 
 ```markdown
-@[agent-name]
-  task: [clear description of what to do]
-  context: [relevant files, paths, or background]
-  constraints: [rules, patterns, or limitations]
-  output: [expected deliverable]
+# Launch 3 agents in parallel (single message with multiple Task calls)
+
+Task 1:
+  subagent_type: Explore
+  prompt: "Explore libs/user/ for existing patterns..."
+
+Task 2:
+  subagent_type: Plan
+  prompt: "Analyze architecture for new user-preferences feature..."
+
+Task 3:
+  subagent_type: general-purpose
+  prompt: "Read @ux-researcher.md and create user persona for..."
+```
+
+### Sequential Execution
+When tasks depend on previous results:
+
+```markdown
+# Step 1: Explore codebase
+Task:
+  subagent_type: Explore
+  prompt: "Find all facade implementations in the codebase..."
+
+# Wait for result, then Step 2: Plan based on findings
+Task:
+  subagent_type: Plan
+  prompt: "Based on facade patterns found: {results}, design..."
+```
+
+---
+
+## Available Sub-Agent Types
+
+| subagent_type | Purpose | Tools Available |
+|---------------|---------|-----------------|
+| `Explore` | Fast codebase exploration | Glob, Grep, Read |
+| `Plan` | Architecture planning | All read-only tools |
+| `general-purpose` | Multi-step tasks, agent invocation | All tools |
+| `code-reviewer` | Code review | Read, Grep, Glob |
+
+### Using Agent Definitions
+For `general-purpose` agents, reference agent files:
+
+```markdown
+Task:
+  subagent_type: general-purpose
+  prompt: |
+    Read .agent/Agents/design/@ui-designer.md
+
+    Then create UI specs for:
+    - Dashboard card component
+    - Mobile-first responsive
+    - Dark mode support
+
+    Output: Component template with PrimeNG
+```
+
+---
+
+## Feature Development Workflow
+
+### Phase 1: Planning (Parallel Investigation)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    PARALLEL CONTEXT GATHERING                    │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌─────────────┐  ┌──────────────┐  ┌─────────────────────┐    │
+│  │   Explore   │  │     Plan     │  │  general-purpose    │    │
+│  │  (codebase) │  │ (architecture)│  │  (@ux-researcher)  │    │
+│  └──────┬──────┘  └──────┬───────┘  └─────────┬───────────┘    │
+│         │                │                     │                 │
+│         └────────────────┼─────────────────────┘                │
+│                          ▼                                       │
+│                   ┌─────────────┐                               │
+│                   │  PRD Created │                               │
+│                   └─────────────┘                               │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Phase 2: Implementation (Sequential)
+
+```
+@nx-operator      → Generate libs
+       ↓
+@coder (domain)   → Interfaces, DTOs
+       ↓
+@coder (data)     → Facades, repositories
+       ↓
+@coder (feature)  → Components
+       ↓
+@test-writer      → Unit tests
+       ↓
+@qa-runner        → lint, test, build
+       ↓
+@git-operator     → Commit
 ```
 
 ---
 
 ## Quick Reference
 
-| Need | Agent | Example |
-|------|-------|---------|
-| Run all checks | `@qa-runner` | Lint + test + build |
-| Test in browser | `@e2e-tester` | Click flows, visual checks |
-| Create commit | `@git-operator` | Analyze changes, format message |
-| Write code | `@coder` | Implement feature/fix |
-| Write tests | `@test-writer` | Unit tests with mocks |
-| Review code | `@code-reviewer` | Standards compliance |
-| Explore code | `@explorer` | Find patterns, understand flow |
-| Debug issue | `@debugger` | Investigate errors |
-| Validate arch | `@arch-validator` | Lib boundaries, dependencies |
-| Generate lib | `@nx-operator` | Create libs, run generators |
+| Need | Agent | subagent_type |
+|------|-------|---------------|
+| **Planning** |||
+| Full feature plan | `@task-planner` | Use `/plan` command |
+| Architecture check | `@arch-validator` | `Plan` |
+| **Research** |||
+| Find code patterns | `@explorer` | `Explore` |
+| User research | `@ux-researcher` | `general-purpose` |
+| **Design** |||
+| UI specifications | `@ui-designer` | `general-purpose` |
+| **Development** |||
+| Write code | `@coder` | `general-purpose` |
+| Write tests | `@test-writer` | `general-purpose` |
+| Generate libs | `@nx-operator` | `general-purpose` |
+| **Quality** |||
+| Run validations | `@qa-runner` | `general-purpose` |
+| Review code | `@code-reviewer` | `code-reviewer` |
+| **Operations** |||
+| Create commit | `@git-operator` | `general-purpose` |
+| Debug issue | `@debugger` | `general-purpose` |
 
 ---
 
 ## Workflow Examples
 
-### Feature Implementation
+### New Feature (Full Pipeline)
 
-```
-1. @explorer       → Understand existing patterns
-2. @arch-validator → Verify lib structure is correct
-3. @coder          → Implement the feature
-4. @test-writer    → Write unit tests
-5. @qa-runner      → Run lint/test/build
-6. @e2e-tester     → Test in browser (if UI)
-7. @git-operator   → Create commit
+```markdown
+# 1. Plan the feature
+/plan
+# Describe: "User preferences feature for saving dashboard settings"
+
+# 2. After PRD is created, implement in order:
+@nx-operator → Generate libs
+@coder → Implement domain layer
+@coder → Implement data-access layer
+@coder → Implement feature components
+@test-writer → Write tests
+@qa-runner → Validate
+@git-operator → Commit
 ```
 
 ### Bug Fix
 
-```
-1. @debugger       → Investigate root cause
-2. @coder          → Implement fix
-3. @test-writer    → Add regression test
-4. @qa-runner      → Verify all passes
-5. @git-operator   → Create commit
+```markdown
+# 1. Investigate
+Task (subagent_type: general-purpose):
+  prompt: "@debugger - Investigate root cause of {error}"
+
+# 2. Fix
+Task (subagent_type: general-purpose):
+  prompt: "@coder - Fix the issue based on: {findings}"
+
+# 3. Test
+Task (subagent_type: general-purpose):
+  prompt: "@test-writer - Add regression test for {bug}"
+
+# 4. Validate & Commit
+@qa-runner → lint, test, build
+@git-operator → commit
 ```
 
 ### Code Review
 
-```
-1. @code-reviewer  → Check standards compliance
-2. @arch-validator → Verify architecture rules
-3. @qa-runner      → Run full validation
+```markdown
+# Run parallel reviews
+Task 1 (subagent_type: code-reviewer):
+  prompt: "Review code changes for standards compliance"
+
+Task 2 (subagent_type: Plan):
+  prompt: "@arch-validator - Check architecture rules"
+
+# Then validate
+@qa-runner → lint, test, build
 ```
 
 ---
 
 ## Rules
 
-1. **Never skip quality checks** - Always run `@qa-runner` before commit
-2. **Test UI changes in browser** - Always use `@e2e-tester` for visual changes
-3. **One agent per responsibility** - Don't mix concerns
-4. **Document complex changes** - Use `@docs-writer` when needed
-5. **Validate architecture** - Check boundaries before adding dependencies
+1. **Use Task tool for agents** - Never try to invoke agents directly in conversation
+2. **Parallel when possible** - Launch independent agents simultaneously
+3. **Sequential when dependent** - Wait for results when next step needs them
+4. **Always validate** - Run `@qa-runner` before any commit
+5. **Reference agent files** - Use `Read .agent/Agents/...` for context
 
 ---
 
-**See individual agent files for detailed instructions and capabilities.**
+## Hooks (Simplified)
 
+The project uses minimal hooks:
 
-### Invocation Pattern
+| Hook | Trigger | Action |
+|------|---------|--------|
+| Pre-commit | `git commit` | Run `nx affected:lint/test/build` |
 
-```markdown
-@[agent-name]
-  task: [clear description]
-  context: [relevant files/paths]
-  constraints: [rules to follow]
-  output: [expected deliverable]
-```
+All other orchestration is done through the Task tool and sub-agents.
 
 ---
 
-### Workflow Examples
+## PRD Location
 
-#### Feature Implementation
-```
-1. @explorer       → Understand existing patterns
-2. @arch-validator → Verify lib structure
-3. @coder          → Implement feature
-4. @test-writer    → Write unit tests
-5. @qa-runner      → Run lint/test/build
-6. @e2e-tester     → Test in browser (if UI)
-7. @git-operator   → Create commit
-```
+- **Plans**: `.agent/Plans/` (Claude's native plan mode)
+- **PRDs**: `.agent/Tasks/PRD-*.md` (structured requirements)
+- **Archive**: `.agent/Plans/archive/` (completed plans)
 
-#### Bug Fix
-```
-1. @debugger       → Investigate root cause
-2. @coder          → Implement fix
-3. @test-writer    → Add regression test
-4. @qa-runner      → Verify all passes
-5. @git-operator   → Create commit
-```
+---
 
-#### Pre-Commit Validation
-```
-@qa-runner
-  task: Validate before commit
-  scope: affected
-  checks: lint, test, build
-  output: Pass/fail report
-```
-
-#### E2E Browser Test
-```
-@e2e-tester
-  task: Test login flow
-  url: http://localhost:4200/login
-  flow: Fill form → Submit → Verify dashboard
-  assertions: No errors, correct redirect
-  output: Test report with screenshots
-```
-
-#### Create Commit
-```
-@git-operator
-  task: Commit implementation
-  context: Recent changes
-  constraints: Conventional commits format
-  output: Commit with proper message
-```
+**See individual agent files for detailed capabilities and examples.**

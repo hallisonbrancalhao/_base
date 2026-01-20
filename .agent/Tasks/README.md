@@ -67,15 +67,114 @@ PRDs can be automatically generated from Claude Code's Plan Mode workflow.
 ```
 User Request → EnterPlanMode → Write Plan → ExitPlanMode
                                                   ↓
-                                      ┌──────────────────────┐
-                                      │  Automatic Hooks:    │
-                                      │  1. plan-review.sh   │
-                                      │  2. plan-to-prd.sh   │ ← Generates PRD
-                                      │  3. archive-plan.sh  │
-                                      └──────────────────────┘
+                                      ┌──────────────────────────────┐
+                                      │  Automatic Hooks:            │
+                                      │  1. plan-review.sh           │
+                                      │  2. workflow-orchestrator.sh │ ← Creates agent templates
+                                      │  3. plan-to-prd.sh           │ ← Generates PRD
+                                      │  4. archive-plan.sh          │
+                                      └──────────────────────────────┘
                                                   ↓
-                              PRD created in .agent/Tasks/PRD-YYYY-MM-###_name.md
+                              ┌─────────────────────────────────────────┐
+                              │ PRD in .agent/Tasks/PRD-YYYY-MM-###.md  │
+                              │ Workflow in .agent/Tasks/[feature]/     │
+                              │   ├── WORKFLOW.md (tracker)             │
+                              │   ├── UX-RESEARCH.md (template)         │
+                              │   ├── UI-SPECS.md (template)            │
+                              │   └── API-REQUIREMENTS.md (template)    │
+                              └─────────────────────────────────────────┘
 ```
+
+---
+
+## 🤖 Agent Development Workflow
+
+After PRD generation, execute agents in sequence:
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    AGENT PIPELINE                                    │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  PRD/Ideia                                                          │
+│      │                                                               │
+│      ▼                                                               │
+│  ┌──────────────────┐                                               │
+│  │  @ux-researcher  │ ──► UX-RESEARCH.md                            │
+│  │  (User research) │     - Personas                                │
+│  └────────┬─────────┘     - Journey maps                            │
+│           │               - Pain points                              │
+│           ▼                                                          │
+│  ┌──────────────────┐                                               │
+│  │   @ui-designer   │ ──► UI-SPECS.md                               │
+│  │  (Component design)│   - Component specs                         │
+│  └────────┬─────────┘     - Layouts                                 │
+│           │               - States                                   │
+│           ▼                                                          │
+│  ┌──────────────────────┐                                           │
+│  │ @frontend-developer  │ ──► API-REQUIREMENTS.md                   │
+│  │ (Angular implementation)│  - DTOs                                │
+│  └────────┬─────────────┘     - Endpoints                           │
+│           │                   - Validation                           │
+│           ▼                                                          │
+│  ┌──────────────────────┐                                           │
+│  │  @backend-architect  │ ──► Implementation                        │
+│  │ (NestJS implementation)│   - Controllers                         │
+│  └────────┬─────────────┘     - Services                            │
+│           │                   - Entities                             │
+│           ▼                                                          │
+│  ┌──────────────────┐                                               │
+│  │    @qa-runner    │ ──► Validation                                │
+│  │  (Quality check) │     - lint, test, build                       │
+│  └──────────────────┘                                               │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Agent Invocation Pattern
+
+Each agent receives the previous agent's output:
+
+```markdown
+# Step 1: UX Research
+@ux-researcher
+  task: Complete UX-RESEARCH.md for [feature]
+  input: PRD document
+  output: .agent/Tasks/[feature]/UX-RESEARCH.md
+
+# Step 2: UI Design (after UX)
+@ui-designer
+  task: Complete UI-SPECS.md based on UX research
+  input: .agent/Tasks/[feature]/UX-RESEARCH.md
+  output: .agent/Tasks/[feature]/UI-SPECS.md
+
+# Step 3: Frontend (after UI)
+@frontend-developer
+  task: Implement components, complete API-REQUIREMENTS.md
+  input: .agent/Tasks/[feature]/UI-SPECS.md
+  output:
+    - Components in libs/[scope]/feature-[name]
+    - .agent/Tasks/[feature]/API-REQUIREMENTS.md
+
+# Step 4: Backend (after Frontend)
+@backend-architect
+  task: Implement API based on requirements
+  input: .agent/Tasks/[feature]/API-REQUIREMENTS.md
+  output: API in libs/[scope]/data-source
+
+# Step 5: Quality Assurance
+@qa-runner
+  task: Run full validation
+  scope: affected
+```
+
+### Skipping Phases
+
+- **Backend-only features**: Skip @ux-researcher and @ui-designer
+- **UI fixes**: Start at @ui-designer
+- **Bug fixes**: Use @debugger → @coder → @qa-runner flow
+
+See `.agent/Agents/WORKFLOW.md` for detailed agent documentation.
 
 ### Plan Structure for Best Results
 

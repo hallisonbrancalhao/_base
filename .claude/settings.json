@@ -8,8 +8,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/pre-implementation-check.sh",
-            "timeout": 5
+            "command": "PROMPT=\"$CLAUDE_USER_CONTENT\"; if echo \"$PROMPT\" | grep -qiE 'implement|criar|adicionar|refactor|nx g|gerar|build|develop'; then echo '<system-reminder>IMPLEMENTATION DETECTED: Read .agent/System/libs_architecture_pattern.md and .agent/System/base_rules.md before implementing. Use Facade Pattern, standalone components, direct imports.</system-reminder>'; fi; exit 0",
+            "timeout": 3
           }
         ]
       }
@@ -20,7 +20,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"$CLAUDE_TOOL_INPUT\" | jq -r '.command' | grep -qE '^git commit' && { echo '🔍 Pre-commit: Running Nx affected validations...'; npx nx affected:lint --base=HEAD~1 && npx nx affected:test --base=HEAD~1 && npx nx affected:build --base=HEAD~1 || { echo '❌ Validation failed! Fix before committing.'; exit 2; }; }; exit 0",
+            "command": "echo \"$CLAUDE_TOOL_INPUT\" | jq -r '.command' | grep -qE '^git commit' && { echo '🔍 Pre-commit: Running Nx affected validations...'; npx nx affected:lint --base=HEAD~1 2>/dev/null && npx nx affected:test --base=HEAD~1 2>/dev/null && npx nx affected:build --base=HEAD~1 2>/dev/null || { echo '❌ Validation failed! Fix issues before committing.'; exit 2; }; }; exit 0",
             "timeout": 600
           }
         ]
@@ -28,54 +28,12 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '📝 File edited: Queuing validation...'",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '📝 File created: Queuing validation...'",
-            "timeout": 5
-          }
-        ]
-      },
-      {
         "matcher": "ExitPlanMode",
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/plan-review.sh",
-            "timeout": 120
-          },
-          {
-            "type": "command",
-            "command": ".claude/hooks/plan-to-prd.sh",
-            "timeout": 60
-          },
-          {
-            "type": "command",
-            "command": ".claude/hooks/archive-plan.sh",
-            "timeout": 30
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": ".claude/hooks/post-implementation.sh 2>/dev/null || { echo '🔍 Running inline validation...'; npx nx affected:lint --base=HEAD~1 2>/dev/null; npx nx affected:test --base=HEAD~1 2>/dev/null; }; exit 0",
-            "timeout": 600
+            "command": "PLANS_DIR=\"${CLAUDE_WORKING_DIRECTORY}/.agent/Plans\"; TASKS_DIR=\"${CLAUDE_WORKING_DIRECTORY}/.agent/Tasks\"; mkdir -p \"$TASKS_DIR\"; PLAN=$(find \"$PLANS_DIR\" -maxdepth 1 -name '*.md' -type f ! -name 'README*' -mmin -5 2>/dev/null | head -1); if [ -n \"$PLAN\" ]; then NAME=$(basename \"$PLAN\" .md | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | tr -cd '[:alnum:]_-'); PRD_ID=\"PRD-$(date +%Y-%m)-001\"; PRD_FILE=\"$TASKS_DIR/${PRD_ID}_${NAME}.md\"; echo \"<system-reminder>\"; echo \"PLAN APPROVED - PRD Creation\"; echo \"\"; echo \"Plan file: $PLAN\"; echo \"Create PRD at: $PRD_FILE\"; echo \"\"; echo \"Next steps:\"; echo \"1. Use Task tool with sub-agents to investigate context\"; echo \"2. Create structured PRD following .agent/Tasks/README.md template\"; echo \"3. Archive plan to .agent/Plans/archive/\"; echo \"\"; echo \"Recommended agents:\"; echo \"- Explore: Codebase patterns\"; echo \"- Plan: Architecture validation\"; echo \"- general-purpose with @ux-researcher: User needs (if UI)\"; echo \"</system-reminder>\"; fi; exit 0",
+            "timeout": 10
           }
         ]
       }
@@ -86,21 +44,17 @@
       "Read",
       "Edit",
       "Write",
-      "Bash(pnpm *)",
       "Bash(npm *)",
-      "Bash(npx *)",
+      "Bash(npx nx *)",
       "Bash(nx *)",
       "Bash(ng *)",
       "Bash(git *)",
-      "Bash(make *)",
       "Bash(cat *)",
       "Bash(ls *)",
-      "Bash(mkdir *)",
-      "Bash(chmod *)",
       "Bash(grep *)",
       "Bash(find *)",
       "Bash(tree *)",
-      "Bash(.claude/hooks/*)"
+      "Bash(bun *)"
     ],
     "deny": [
       "Read(.env*)",
