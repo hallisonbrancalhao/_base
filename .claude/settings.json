@@ -2,6 +2,18 @@
   "plansDirectory": ".agent/Plans",
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '<system-reminder>'; echo 'SESSION CONTEXT:'; echo ''; echo 'Recent commits:'; git log --oneline -5 2>/dev/null || echo 'No git history'; echo ''; echo 'Changed files (last commit):'; git diff --stat HEAD~1 2>/dev/null | tail -5 || echo 'No changes'; echo '</system-reminder>'; exit 0",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "matcher": "",
@@ -20,13 +32,23 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"$CLAUDE_TOOL_INPUT\" | jq -r '.command' | grep -qE '^git commit' && { echo '🔍 Pre-commit: Running Nx affected validations...'; npx nx affected:lint --base=HEAD~1 2>/dev/null && npx nx affected:test --base=HEAD~1 2>/dev/null && npx nx affected:build --base=HEAD~1 2>/dev/null || { echo '❌ Validation failed! Fix issues before committing.'; exit 2; }; }; exit 0",
+            "command": "echo \"$CLAUDE_TOOL_INPUT\" | jq -r '.command' | grep -qE '^git commit' && { echo '🔍 Pre-commit: Running Nx affected validations...'; pnpm nx affected:lint --base=HEAD~1 2>/dev/null && pnpm nx affected:test --base=HEAD~1 2>/dev/null && pnpm nx affected:build --base=HEAD~1 2>/dev/null || { echo '❌ Validation failed! Fix issues before committing.'; exit 2; }; }; exit 0",
             "timeout": 600
           }
         ]
       }
     ],
     "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=\"$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r '.file_path // .filePath // empty')\"; if [ -n \"$FILE\" ] && { [[ \"$FILE\" == *.ts ]] || [[ \"$FILE\" == *.html ]] || [[ \"$FILE\" == *.json ]]; }; then pnpm prettier --write \"$FILE\" 2>/dev/null || true; fi; exit 0",
+            "timeout": 30
+          }
+        ]
+      },
       {
         "matcher": "ExitPlanMode",
         "hooks": [
@@ -37,6 +59,30 @@
           }
         ]
       }
+    ],
+    "Setup": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '📦 Installing dependencies...'; pnpm install && echo '<system-reminder>Dependencies installed successfully with pnpm.</system-reminder>'; exit 0",
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '<system-reminder>'; echo 'CONTEXT COMPACTING - Key info preserved:'; echo ''; echo 'Current branch:'; git branch --show-current 2>/dev/null || echo 'unknown'; echo ''; echo 'Uncommitted changes:'; git status --short 2>/dev/null | head -10 || echo 'none'; echo '</system-reminder>'; exit 0",
+            "timeout": 5
+          }
+        ]
+      }
     ]
   },
   "permissions": {
@@ -44,6 +90,7 @@
       "Read",
       "Edit",
       "Write",
+      "Bash(pnpm *)",
       "Bash(npm *)",
       "Bash(npx nx *)",
       "Bash(nx *)",
@@ -54,7 +101,7 @@
       "Bash(grep *)",
       "Bash(find *)",
       "Bash(tree *)",
-      "Bash(bun *)"
+      "Bash(gh *)"
     ],
     "deny": [
       "Read(.env*)",

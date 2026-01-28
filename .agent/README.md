@@ -9,7 +9,7 @@
 ```yaml
 project: "@base/source"
 type: Nx Monorepo
-package_manager: bun
+package_manager: pnpm
 
 stack:
   frontend: Angular 21+ (Standalone, Signals)
@@ -114,15 +114,15 @@ stack:
 
 ```bash
 # Development
-bun start                           # Serve web + api
+pnpm start                          # Serve web + api
 
 # Verification (run before commit)
-nx affected:lint --base=main
-nx affected:test --base=main
-nx affected:build --base=main
+pnpm nx affected:lint --base=main
+pnpm nx affected:test --base=main
+pnpm nx affected:build --base=main
 
 # Generate libs
-nx g @nx/angular:lib [name] --directory=[scope] --standalone
+pnpm nx g @nx/angular:lib [name] --directory=[scope] --standalone
 ```
 
 ---
@@ -138,4 +138,4 @@ nx g @nx/angular:lib [name] --directory=[scope] --standalone
 
 ---
 
-**Last Updated**: 2026-01-14
+**Last Updated**: 2026-01-28

@@ -19,7 +19,7 @@ project_context:
   ui_library: PrimeNG 21+
   styling: Tailwind CSS 4+
   testing: Jest 30+
-  package_manager: bun
+  package_manager: pnpm
 
 key_docs:
   - ".agent/System/angular_full.md"           # Angular patterns
@@ -1218,5 +1218,5 @@ nx affected:build --base=main
 # Serve applications
 nx serve web
 nx serve api
-npm start  # Both simultaneously
+pnpm start  # Both simultaneously
 ```

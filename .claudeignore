@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+.angular/
+.nx/
+tmp/
+
+# Test coverage
+coverage/
+
+# Lock files
+*.lock
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+bun.lockb
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Cache
+.cache/
+.turbo/
+.eslintcache
+
+# Environment (security)
+.env
+.env.*
+!.env.example
+
+# Large generated files
+*.min.js
+*.min.css
+*.map
