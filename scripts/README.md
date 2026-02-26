@@ -2,6 +2,69 @@
 
 Scripts para gerenciar a estrutura de contextos de IA.
 
+## setup.sh --update
+
+Atualiza projetos existentes com a configuração mais recente do `_base`. Diferente do `sync-context.sh`, este script roda **de dentro do projeto alvo** e auto-detecta a localização do `_base`.
+
+### Uso
+
+```bash
+# Preview do que seria atualizado
+.claude/hooks/setup.sh --update --dry-run
+
+# Aplica atualizações (auto-detecta _base)
+.claude/hooks/setup.sh --update
+
+# Especifica o _base manualmente
+.claude/hooks/setup.sh --update --base ~/Development/_base
+
+# Atualiza de dentro do _base, apontando para outro projeto
+.claude/hooks/setup.sh --update --target ~/projects/meu-projeto
+
+# Sem sincronizar MCP ou Tasks específicas
+.claude/hooks/setup.sh --update --no-mcp --no-tasks --verbose
+```
+
+### Opções
+
+| Flag | Descrição |
+|------|-----------|
+| `--base <path>` | Caminho para o repositório _base (auto-detectado se omitido) |
+| `--target <path>` | Caminho do projeto alvo (default: raiz do projeto atual) |
+| `--dry-run` | Mostra o que seria feito sem fazer alterações |
+| `--force` | Sobrescreve todos os arquivos sem criar backups |
+| `--no-mcp` | Não sincroniza .mcp.json |
+| `--no-tasks` | Não sincroniza .agent/Tasks/ (exceto templates TEMPLATE_*) |
+| `--verbose` | Mostra progresso detalhado arquivo por arquivo |
+
+### O que é sincronizado
+
+```
+.claude/agents/   → Agentes do pipeline de orquestração
+.claude/commands/  → Slash commands
+.claude/hooks/     → Scripts de hooks e setup
+.agent/SOPs/       → Procedimentos padrão
+.agent/Tasks/      → Templates (TEMPLATE_dev_prd.md, TEMPLATE_spec.md)
+.agent/System/     → Documentação técnica
+.agent/Agents/     → Sub-agentes de desenvolvimento
+.ruler/            → Regras de injeção
+CLAUDE.md          → Instruções principais
+.claudeignore      → Exclusões de contexto
+```
+
+### Arquivos protegidos (nunca sobrescritos)
+
+- `.claude/settings.local.json` (configurações pessoais)
+- `.agent/Tasks/README.md` (específico do projeto)
+
+### Quando usar
+
+- Quando o `_base` recebe novos agentes, commands ou regras
+- Ao adotar features novas como orquestração multi-task
+- Para manter projetos existentes em sincronia com as últimas práticas
+
+---
+
 ## sync-context.sh
 
 Sincroniza a estrutura de contextos para um projeto existente.
@@ -127,10 +190,15 @@ git commit -m "chore: sync AI context structure from base"
 
 ### Atualizar Projeto
 
-Quando a base for atualizada:
+Quando a base for atualizada, há duas opções:
 
 ```bash
-# Sincroniza apenas atualizações, mantendo PRDs e MCP
+# Opção 1: De dentro do projeto alvo (recomendado)
+cd ~/projects/meu-projeto
+.claude/hooks/setup.sh --update --dry-run    # preview
+.claude/hooks/setup.sh --update              # aplica
+
+# Opção 2: De dentro do _base (via sync-context)
 ./scripts/sync-context.sh ~/projects/meu-projeto --no-tasks --no-mcp
 ```
 

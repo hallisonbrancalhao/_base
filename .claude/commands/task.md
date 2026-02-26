@@ -13,10 +13,10 @@ Você vai me ajudar a implementar uma task do diretório `.agent/Tasks` seguindo
 Primeiro, navegue até `.agent/Tasks/` e escolha uma task com status não finalizado:
 
 ```bash
-ls -la /Users/halissonbrancalhao/Development/base/.agent/Tasks/
+ls -la .agent/Tasks/
 ```
 
-Verifique os arquivos de task (TASK, PRDs, BUG) e selecione uma com status **TODO** ou **IN_PROGRESS**.
+Verifique os arquivos de task (TASK, PRDs, BUG, SPEC) e selecione uma com status **TODO**, **IN_PROGRESS**, ou **pending** (para specs).
 
 ### 2. Carregar Project Context
 
@@ -66,7 +66,7 @@ implementation_notes: [resumo detalhado do que foi implementado, decisões técn
 Repita o processo com a próxima task não finalizada:
 
 ```bash
-ls -la /Users/halissonbrancalhao/Development/base/.agent/Tasks/
+ls -la .agent/Tasks/
 ```
 
 ---

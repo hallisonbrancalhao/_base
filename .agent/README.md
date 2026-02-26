@@ -26,10 +26,13 @@ stack:
 ```
 .agent/
 ├── README.md          ← YOU ARE HERE
-├── Agents/            ← Agent configs & code standards
+├── Agents/            ← Sub-agentes de desenvolvimento (15+)
 ├── System/            ← Technical documentation
-├── Tasks/             ← PRDs & implementation plans
+├── Tasks/             ← PRDs, DEV_PRDs, Specs & templates
+│   ├── TEMPLATE_dev_prd.md   ← Template para developer PRDs
+│   └── TEMPLATE_spec.md      ← Template para specs executáveis
 └── SOPs/              ← Standard procedures
+    └── orchestration_workflow.md  ← Multi-task orchestration guide
 ```
 
 ---
@@ -67,7 +70,10 @@ stack:
 | Document | Purpose |
 |----------|---------|
 | [Git Commit Instructions](./SOPs/git_commit_instructions.md) | Commit format |
+| [Orchestration Workflow](./SOPs/orchestration_workflow.md) | Multi-task pipeline |
 | [PRD Template](./Tasks/README.md) | Feature documentation |
+| [DEV_PRD Template](./Tasks/TEMPLATE_dev_prd.md) | Developer PRD structure |
+| [Spec Template](./Tasks/TEMPLATE_spec.md) | Executable spec structure |
 
 ---
 
@@ -100,6 +106,24 @@ stack:
 
 ## Task Workflow
 
+### Single Task
+```
+1. /plan WORK-xxxx             → Investiga e cria DEV_PRD
+2. Revisa DEV_PRD, marca "aprovado"
+3. /spec                       → Gera spec executável
+4. /task                       → Implementa a spec
+5. Hooks validam lint/test/build no commit
+```
+
+### Multi-Task (Orquestração)
+```
+1. /orchestrate WORK-1 WORK-2  → Classifica, analisa, cria DEV_PRDs
+2. Revisa e aprova cada PRD
+3. /spec                       → Gera specs para PRDs aprovadas
+4. /task-team                  → Implementa em paralelo
+```
+
+### Manual (sem orquestração)
 ```
 1. Read relevant System/ docs
 2. Check/Create PRD in Tasks/
@@ -113,6 +137,13 @@ stack:
 ## Quick Commands
 
 ```bash
+# Orchestration (Claude Code slash commands)
+/plan WORK-xxxx                     # Plan single task → DEV_PRD
+/orchestrate WORK-1 WORK-2 WORK-3  # Multi-task → DEV_PRDs
+/spec                               # Convert approved PRDs → Specs
+/task                               # Implement single spec
+/task-team                          # Implement specs in parallel
+
 # Development
 pnpm start                          # Serve web + api
 
@@ -138,4 +169,4 @@ pnpm nx g @nx/angular:lib [name] --directory=[scope] --standalone
 
 ---
 
-**Last Updated**: 2026-01-28
+**Last Updated**: 2026-02-26

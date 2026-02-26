@@ -55,7 +55,7 @@ Use SOPs when you need to:
 ---
 
 ### ✅ `ai_prompt_templates.md`
-**Status**: Available ⭐ NEW
+**Status**: Available
 
 **Covers**:
 1. Ready-to-use prompt templates for common tasks
@@ -68,14 +68,35 @@ Use SOPs when you need to:
 **When to use**: Before prompting AI - copy appropriate template and fill in your details
 
 **Templates Included**:
-- 🐛 Bug Fix (Simple)
-- 🐛 Bug Fix (Complex - Parallel)
-- ✨ New Feature (Small)
-- ✨ New Feature (Complex - Parallel)
-- 🧪 Add Tests
-- 🔄 Refactor Code
-- 📚 Code Review
-- 🔍 Investigate/Understand Code
+- Bug Fix (Simple)
+- Bug Fix (Complex - Parallel)
+- New Feature (Small)
+- New Feature (Complex - Parallel)
+- Add Tests
+- Refactor Code
+- Code Review
+- Investigate/Understand Code
+
+---
+
+### ✅ `orchestration_workflow.md`
+**Status**: Available
+
+**Covers**:
+1. Multi-task orchestration system (visao geral e fluxo completo)
+2. Available commands: `/orchestrate`, `/spec`, `/task`, `/task-team`
+3. Agent types: orchestrator, bug-investigator, enhancement-analyst, prd-writer, spec-writer, implementer
+4. File lifecycle: DEV_PRD creation, review, approval, spec generation, implementation
+5. Reviewer guide: what to check, how to approve/reject DEV_PRDs
+6. Troubleshooting common issues
+
+**When to use**: When working with multiple tasks simultaneously, understanding the orchestration pipeline, or reviewing DEV_PRDs
+
+**Related**:
+- `.claude/agents/` - Agent definitions
+- `.claude/commands/orchestrate.md` - Orchestrate command
+- `.agent/Tasks/TEMPLATE_dev_prd.md` - DEV_PRD template
+- `.agent/Tasks/TEMPLATE_spec.md` - Spec template
 
 ---
 
@@ -309,11 +330,11 @@ After completing all steps, verify:
 
 ## 📊 Statistics
 
-- **Total SOPs**: 3
+- **Total SOPs**: 4
 - **Planned SOPs**: 8
 - **SOPs in creation**: 0
-- **Ready SOPs**: 3 (git_commit_instructions, how_to_use_agent_structure_with_ai, ai_prompt_templates)
-- **Last general update**: 2025-10-10
+- **Ready SOPs**: 4 (git_commit_instructions, how_to_use_agent_structure_with_ai, ai_prompt_templates, orchestration_workflow)
+- **Last general update**: 2026-02-26
 
 ---
 
@@ -391,5 +412,5 @@ After completing all steps, verify:
 
 ---
 
-**Last update**: 2025-10-10
-**Version**: 1.0.0
+**Last update**: 2026-02-26
+**Version**: 1.1.0

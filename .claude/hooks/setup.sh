@@ -7,12 +7,15 @@
 #   --init        : Interactive development setup (default)
 #   --init-only   : CI/Headless setup (exits after completion)
 #   --maintenance : Periodic upkeep (weekly chores)
+#   --update      : Sync _base configuration to existing projects
 #
 # Usage:
 #   ./setup.sh              # Auto-detect mode (init or init-only)
 #   ./setup.sh --init       # Interactive setup
 #   ./setup.sh --init-only  # CI/Headless setup
 #   ./setup.sh --maintenance # Periodic maintenance
+#   ./setup.sh --update     # Sync latest _base config to current project
+#   ./setup.sh --update --dry-run  # Preview what would change
 #   ./setup.sh --help       # Show help
 # =============================================================================
 
@@ -38,6 +41,10 @@ detect_mode() {
         ;;
       --maintenance)
         echo "maintenance"
+        return
+        ;;
+      --update)
+        echo "update"
         return
         ;;
       --help|-h)
@@ -83,6 +90,12 @@ Modes:
                   - Preflight checks (lint, test, build affected)
                   - Exits after setup
 
+  --update        Sync _base configuration to existing project
+                  - Syncs agents, commands, hooks, SOPs, templates
+                  - Preserves project-specific files
+                  - Creates backups for settings.json
+                  - Shows detailed diff summary
+
   --maintenance   Periodic maintenance (run weekly)
                   - Updates dependencies
                   - Cleans caches and artifacts
@@ -93,6 +106,15 @@ Modes:
 
 Options:
   -h, --help      Show this help message
+
+Update options (use with --update):
+  --base <path>   Path to _base repository (auto-detected if not provided)
+  --target <path> Path to target project (defaults to current project root)
+  --dry-run       Show what would change without modifying files
+  --force         Overwrite all files without backup prompts
+  --no-mcp        Skip .mcp.json sync
+  --no-tasks      Skip .agent/Tasks/ sync (except templates)
+  --verbose       Show detailed file-by-file progress
 
 Environment Detection:
   The script auto-detects the appropriate mode if not specified:
@@ -105,11 +127,15 @@ Examples:
   ./setup.sh                    # Auto-detect mode
   ./setup.sh --init             # Force interactive mode
   ./setup.sh --init-only        # Force CI mode
+  ./setup.sh --update           # Sync _base config to current project
+  ./setup.sh --update --dry-run # Preview changes
+  ./setup.sh --update --base ~/dev/_base --target ~/dev/my-project
   ./setup.sh --maintenance      # Run maintenance
 
 Make targets:
   make init       # Run --init mode
   make ci         # Run --init-only mode
+  make update     # Run --update mode
   make maintain   # Run --maintenance mode
 
 EOF
@@ -154,6 +180,11 @@ main() {
       validate_setup_dir
       validate_script "$SETUP_DIR/init-only.sh"
       exec "$SETUP_DIR/init-only.sh" "$@"
+      ;;
+    update)
+      validate_setup_dir
+      validate_script "$SETUP_DIR/update.sh"
+      exec "$SETUP_DIR/update.sh" "$@"
       ;;
     maintenance)
       validate_setup_dir

@@ -58,11 +58,49 @@ Don't create PRD for:
 
 ---
 
-## 🔄 Automatic PRD Generation (Plan Mode Integration)
+## 🔄 PRD Generation Workflows
 
-PRDs can be automatically generated from Claude Code's Plan Mode workflow.
+### Option 1: Orchestration Pipeline (Recommended for multiple tasks)
 
-### How It Works
+```
+/orchestrate WORK-1234 WORK-1235 WORK-1236
+        |
+        v
+  [Classifies: bug / enhancement / feature]
+        |
+   +----+----+----+
+   |         |         |
+   v         v         v
+ bug-      enhance-   explore +
+ investigator ment-analyst plan
+   |         |         |
+   v         v         v
+  [prd-writer creates DEV_PRD for each task]
+        |
+        v
+  DEV_PRD_WORK_XXXX.md  ← Uses TEMPLATE_dev_prd.md
+        |
+        v
+  [Human review → approve/reject]
+        |
+        v
+  /spec → SPEC_WORK_XXXX.md  ← Uses TEMPLATE_spec.md
+        |
+        v
+  /task or /task-team → Implementation
+```
+
+**Templates**: `TEMPLATE_dev_prd.md` (developer PRDs), `TEMPLATE_spec.md` (executable specs)
+
+**SOP**: See `.agent/SOPs/orchestration_workflow.md` for complete workflow guide.
+
+### Option 2: Single Task Planning
+
+```
+/plan WORK-xxxx → Investigates and creates DEV_PRD
+```
+
+### Option 3: Plan Mode (Legacy, for ad-hoc features)
 
 ```
 User Request → EnterPlanMode → Write Plan → ExitPlanMode
@@ -70,18 +108,13 @@ User Request → EnterPlanMode → Write Plan → ExitPlanMode
                                       ┌──────────────────────────────┐
                                       │  Automatic Hooks:            │
                                       │  1. plan-review.sh           │
-                                      │  2. workflow-orchestrator.sh │ ← Creates agent templates
-                                      │  3. plan-to-prd.sh           │ ← Generates PRD
+                                      │  2. workflow-orchestrator.sh │
+                                      │  3. plan-to-prd.sh           │
                                       │  4. archive-plan.sh          │
                                       └──────────────────────────────┘
                                                   ↓
                               ┌─────────────────────────────────────────┐
                               │ PRD in .agent/Tasks/PRD-YYYY-MM-###.md  │
-                              │ Workflow in .agent/Tasks/[feature]/     │
-                              │   ├── WORKFLOW.md (tracker)             │
-                              │   ├── UX-RESEARCH.md (template)         │
-                              │   ├── UI-SPECS.md (template)            │
-                              │   └── API-REQUIREMENTS.md (template)    │
                               └─────────────────────────────────────────┘
 ```
 
@@ -1120,9 +1153,14 @@ nx run-many --target=test --configuration=ci
 
 ---
 
-## 📂 Available PRDs
+## 📂 Available PRDs & Templates
 
-### 📚 Examples & Templates
+### 📚 Templates (Orchestration Pipeline)
+- **TEMPLATE_dev_prd.md** - Template for developer PRDs (used by `prd-writer` agent). Contains YAML frontmatter, analysis sections, decision tables, and implementation strategy.
+- **TEMPLATE_spec.md** - Template for executable specs (used by `spec-writer` agent). Contains sequential actions, file lists, test requirements, and validation commands.
+- **templates_de_prompt.md** - Reusable prompt templates for common AI interactions (bug fixes, features, testing, refactoring, code review, design handoff).
+
+### 📚 Examples & Legacy Templates
 - **PRD-2026-01-001_user_management.md** - **COMPLETE EXAMPLE** of a fullstack feature PRD with all sections filled. Use as primary reference for new PRDs.
 - **PRD_CHECKLIST.md** - Quick validation checklist for AI agents to verify PRD completeness.
 - **EXAMPLE_fix_process_form_validation_bug.md** - Example of bug fix PRD with detailed investigation.

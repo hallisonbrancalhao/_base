@@ -1,187 +1,125 @@
 ---
-description: Plan a new feature using sub-agents for context investigation and PRD creation
+description: Plan a single task (WORK-xxxx) with context investigation and DEV_PRD creation
 ---
 
-# Feature Planning Workflow
+# Single-Task Planning
 
-You will help plan a new feature by orchestrating specialized sub-agents.
+Planejamento individual de uma task. Versao focada e objetiva — para multiplas tasks use `/orchestrate`.
 
-## Planning Pipeline
+## Input
 
 ```
-User Request → Context Investigation → PRD Creation → Review → Finalize
+$ARGUMENTS
 ```
 
-## Step 1: Context Investigation (Parallel)
+## Protocolo
 
-Launch these sub-agents **in parallel** to gather context:
+### Fase 1: Identificar a Task
 
-### 1.1 Codebase Exploration
+1. Extraia o WORK-xxxx e a descricao do input
+2. Classifique como `bug`, `enhancement`, ou `feature`
+3. Confirme com o usuario:
+
+```
+Task: WORK-XXXX
+Tipo: [bug/enhancement/feature]
+Descricao: [resumo]
+
+Correto? Posso iniciar a analise?
+```
+
+### Fase 2: Investigacao (Paralela)
+
+Spawne os agents adequados ao tipo da task em PARALELO:
+
+**Para bugs** — spawne `bug-investigator`:
 ```
 Use Task tool:
+  subagent_type: general-purpose
+  description: "Investigate bug WORK-XXXX"
+  prompt: |
+    Read the agent definition at .claude/agents/bug-investigator.md and follow its protocol exactly.
+
+    Task: WORK-XXXX
+    Description: [descricao do bug]
+
+    Investigate this bug and return a structured analysis following the report format in the agent definition.
+```
+
+**Para enhancements** — spawne `enhancement-analyst`:
+```
+Use Task tool:
+  subagent_type: general-purpose
+  description: "Analyze enhancement WORK-XXXX"
+  prompt: |
+    Read the agent definition at .claude/agents/enhancement-analyst.md and follow its protocol exactly.
+
+    Task: WORK-XXXX
+    Description: [descricao da melhoria]
+
+    Analyze this enhancement and return a structured analysis following the report format in the agent definition.
+```
+
+**Para features** — spawne TWO agents em paralelo:
+```
+Use Task tool (agent 1):
   subagent_type: Explore
+  description: "Explore codebase for WORK-XXXX"
   prompt: |
-    Explore the codebase to understand:
-    1. Existing patterns for similar features
-    2. Relevant libs and their structure in libs/{scope}/
-    3. Dependencies and imports used
-    4. Testing patterns
+    Explore the codebase to understand patterns relevant to: [descricao da feature]
+    Focus on: libs/ structure, existing facades, component patterns, testing patterns
+    Return: patterns to follow, files to reference, libs that exist vs need creation
 
-    Focus areas:
-    - libs/ directory structure
-    - Existing facades and their patterns
-    - Component structure and templates
-
-    Return a summary of:
-    - Patterns to follow
-    - Files to reference
-    - Libs that exist vs need creation
-```
-
-### 1.2 Architecture Validation
-```
-Use Task tool:
+Use Task tool (agent 2):
   subagent_type: Plan
+  description: "Validate architecture for WORK-XXXX"
   prompt: |
-    Analyze the architecture requirements for this feature:
-    1. Which libs need to be created (domain, data-access, feature-*)
-    2. Dependency matrix compliance
-    3. Tag requirements (type:*, scope:*)
-    4. Import patterns to follow
-
+    Analyze architecture requirements for: [descricao da feature]
     Reference: .agent/System/libs_architecture_pattern.md
-
-    Return:
-    - Libs to create with full paths
-    - Dependencies between libs
-    - Potential architecture risks
+    Return: libs to create with paths, dependencies, tag requirements, potential risks
 ```
 
-### 1.3 UX Research (if UI feature)
+### Fase 3: Geracao da DEV_PRD
+
+Spawne `prd-writer` com os resultados da analise:
 ```
 Use Task tool:
   subagent_type: general-purpose
+  description: "Write PRD for WORK-XXXX"
   prompt: |
-    Read .agent/Agents/design/@ux-researcher.md
+    Read the agent definition at .claude/agents/prd-writer.md and follow its protocol exactly.
 
-    Conduct quick UX research for this feature:
-    1. Identify target user persona
-    2. Map the user journey
-    3. List key pain points to address
-    4. Define success metrics
+    Task: WORK-XXXX
+    Type: [bug/enhancement/feature]
 
-    Keep it concise - 1 persona, 1 journey, 3-5 pain points.
+    Analysis Results:
+    ---
+    [resultados da analise da Fase 2]
+    ---
+
+    Create the DEV_PRD_WORK_XXXX.md file in .agent/Tasks/
 ```
 
-## Step 2: PRD Creation
+### Fase 4: Apresentacao
 
-After investigation results, create the PRD:
-
-1. **Read the PRD template**: `.agent/Tasks/README.md`
-
-2. **Fill the AI Context Block** with:
-   ```yaml
-   feature:
-     name: "{feature-name}"
-     type: feature
-     scope: {scope}
-     complexity: S|M|L|XL
-
-   nx_impact:
-     libs_to_create:
-       - path: "libs/{scope}/domain"
-         type: domain
-         tags: ["type:domain", "scope:{scope}"]
-       - path: "libs/{scope}/data-access"
-         type: data-access
-         tags: ["type:data-access", "scope:{scope}"]
-       - path: "libs/{scope}/feature-{name}"
-         type: feature
-         tags: ["type:feature", "scope:{scope}"]
-   ```
-
-3. **Write Functional Requirements** from investigation findings
-
-4. **Define API contracts** (if backend involved)
-
-5. **Set Definition of Done** criteria
-
-## Step 3: Plan Review (Parallel)
-
-Launch review agents **in parallel**:
-
-### 3.1 Code Quality Review
-```
-Use Task tool:
-  subagent_type: general-purpose
-  prompt: |
-    Read .agent/Agents/quality/@code-reviewer.md
-
-    Review this PRD for code quality concerns:
-    - Single Responsibility adherence
-    - Component complexity estimation
-    - Test coverage feasibility
-    - Potential security issues
-
-    PRD Content:
-    {prd_content}
-
-    Return: List of concerns with severity (critical/warning/info)
-```
-
-### 3.2 Architecture Review
-```
-Use Task tool:
-  subagent_type: general-purpose
-  prompt: |
-    Read .agent/Agents/quality/@arch-validator.md
-
-    Validate PRD architecture:
-    - Nx lib structure compliance
-    - Dependency matrix violations
-    - Facade pattern usage
-    - Import patterns (direct vs barrel)
-
-    PRD Content:
-    {prd_content}
-
-    Return: List of architecture issues with recommendations
-```
-
-## Step 4: Finalize
-
-1. **Incorporate review feedback** into the PRD
-
-2. **Generate PRD filename**:
-   ```
-   PRD-YYYY-MM-###_{feature_name}.md
-   ```
-
-3. **Write PRD** to `.agent/Tasks/`
-
-4. **Create plan summary** in `.agent/Plans/` (Claude's native plan mode will archive this)
-
-5. **Return next steps**:
-   - Which agents to invoke for implementation
-   - Order of execution
-   - Estimated complexity
-
-## Output
-
-The planning workflow produces:
-
-### PRD File
-Location: `.agent/Tasks/PRD-YYYY-MM-###_{feature_name}.md`
-
-### Next Steps
 ```markdown
-## Implementation Workflow
+## PRD Criada
 
-Execute agents in order:
+| Task | Tipo | PRD | Complexidade | Status |
+|------|------|-----|-------------|--------|
+| WORK-XXXX | [tipo] | DEV_PRD_WORK_XXXX.md | [S/M/L/XL] | aguardando-review |
+
+### Próximos passos:
+1. Revise a PRD em `.agent/Tasks/DEV_PRD_WORK_XXXX.md`
+2. Foque na secao "Decisoes Tomadas"
+3. Marque o status como `aprovado` no frontmatter
+4. Execute `/spec` para gerar a spec executável
+
+### Ordem de execucao pos-spec:
 
 1. @nx-operator
    task: Generate libs
-   commands: [list from PRD]
+   commands: [list from spec]
 
 2. @coder
    task: Implement domain/interfaces
@@ -191,7 +129,7 @@ Execute agents in order:
    task: Implement data-access/facades
    scope: libs/{scope}/data-access
 
-4. @coder (or @frontend-developer / @backend-architect)
+4. @coder (or @frontend-developer)
    task: Implement feature components
    scope: libs/{scope}/feature-{name}
 
@@ -207,6 +145,9 @@ Execute agents in order:
    task: Commit changes
 ```
 
----
+## Regras
 
-**Start by describing the feature you want to plan.**
+- NUNCA implemente código — apenas planeje
+- SEMPRE confirme a classificacao da task antes de investigar
+- SEMPRE use o template `TEMPLATE_dev_prd.md` (via prd-writer agent)
+- Se a descricao for vaga, peca esclarecimento ANTES de dispatchar agents

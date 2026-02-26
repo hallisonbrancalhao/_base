@@ -140,10 +140,24 @@ Example plan structure:
 ## Integration with Templates
 
 The PRD generation follows the template defined in:
-- `.agent/Tasks/README.md` - Full PRD template
+- `.agent/Tasks/README.md` - Full PRD template (legacy)
+- `.agent/Tasks/TEMPLATE_dev_prd.md` - Developer PRD template (orchestration pipeline)
+- `.agent/Tasks/TEMPLATE_spec.md` - Executable spec template
 - `.agent/SOPs/templates_de_prompt.md` - Prompt templates reference
 
 Generated PRDs are ready for:
 - AI agent implementation (structured YAML context)
 - Progress tracking (Definition of Done)
 - Code review verification
+
+## Alternative: Orchestration Pipeline
+
+For structured multi-task workflows, use the orchestration pipeline instead of Plan Mode:
+
+```
+/orchestrate WORK-1234 WORK-1235  → Creates DEV_PRDs via specialized agents
+/spec                              → Converts approved PRDs to executable specs
+/task-team                         → Implements specs in parallel
+```
+
+See `.agent/SOPs/orchestration_workflow.md` for the complete workflow documentation.

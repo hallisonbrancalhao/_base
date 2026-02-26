@@ -7,25 +7,57 @@
 
 ## Quick Start
 
-### Planning a New Feature
+### Planning a Single Task
 ```
-/plan
+/plan WORK-xxxx
 ```
-This invokes the planning workflow that uses sub-agents to:
-1. Investigate codebase context
-2. Research UX requirements
-3. Validate architecture
-4. Create PRD in `.agent/Tasks/`
+Investigates and creates a DEV_PRD for a single task using specialized agents.
 
-### Implementing an Existing Task
+### Orchestrating Multiple Tasks
+```
+/orchestrate WORK-1234 WORK-1235 WORK-1236
+```
+Classifies, analyzes in parallel, and creates DEV_PRDs for multiple tasks.
+
+### Generating Executable Specs
+```
+/spec
+```
+Converts approved DEV_PRDs into machine-executable specs.
+
+### Implementing a Spec
 ```
 /task
 ```
-This helps implement PRDs from `.agent/Tasks/` following all project patterns.
+Implements a single spec following all project patterns.
+
+### Implementing in Parallel
+```
+/task-team
+```
+Launches Agent Teams to implement multiple specs in parallel (isolated worktrees).
 
 ---
 
 ## Agent Categories
+
+### Orchestration Pipeline (`.claude/agents/`)
+
+Specialized agents for the multi-task orchestration workflow:
+
+```
+.claude/agents/
+├── orchestrator.md            ← Classifies tasks, coordinates agents
+├── bug-investigator.md        ← Investigates bugs (root cause, data flow)
+├── enhancement-analyst.md     ← Analyzes enhancements (business rules, reuse)
+├── prd-writer.md              ← Creates human-readable DEV_PRDs
+├── spec-writer.md             ← Converts PRDs into executable specs
+└── implementer.md             ← Teammate that implements 1 spec end-to-end
+```
+
+### Development Agents (`.agent/Agents/`)
+
+Sub-agents for code generation and project tasks:
 
 ```
 .agent/Agents/
@@ -99,12 +131,25 @@ Task:
 
 ## Available Sub-Agent Types
 
+### Task Tool Agents
+
 | subagent_type | Purpose | Tools Available |
 |---------------|---------|-----------------|
 | `Explore` | Fast codebase exploration | Glob, Grep, Read |
 | `Plan` | Architecture planning | All read-only tools |
 | `general-purpose` | Multi-step tasks, agent invocation | All tools |
 | `code-reviewer` | Code review | Read, Grep, Glob |
+
+### Orchestration Agents (`.claude/agents/`)
+
+| Agent | Trigger | Purpose |
+|-------|---------|---------|
+| `orchestrator` | `/orchestrate` | Classifies tasks, spawns specialists in parallel |
+| `bug-investigator` | Bug tasks | Gathers error context, traces root cause |
+| `enhancement-analyst` | Enhancement tasks | Consults business rules, identifies reuse |
+| `prd-writer` | After analysis | Creates human-readable DEV_PRDs |
+| `spec-writer` | After PRD approval | Converts PRDs into executable specs |
+| `implementer` | `/task-team` | Implements 1 spec end-to-end in isolated worktree |
 
 ### Using Agent Definitions
 For `general-purpose` agents, reference agent files:
@@ -194,7 +239,41 @@ Task:
 
 ## Workflow Examples
 
-### New Feature (Full Pipeline)
+### Multi-Task Orchestration (Recommended)
+
+```markdown
+# 1. Orchestrate multiple tasks at once
+/orchestrate WORK-1234 WORK-1235 WORK-1236
+# → Classifies each as bug/enhancement/feature
+# → Spawns specialized analysts in parallel
+# → Creates DEV_PRD for each task
+
+# 2. Review each DEV_PRD in .agent/Tasks/
+# → Set status to "aprovado" in frontmatter
+
+# 3. Generate executable specs
+/spec
+
+# 4. Implement all specs in parallel
+/task-team
+```
+
+### Single Task (Plan → Implement)
+
+```markdown
+# 1. Plan a single task
+/plan WORK-1234
+
+# 2. Review DEV_PRD, set status to "aprovado"
+
+# 3. Generate spec
+/spec
+
+# 4. Implement
+/task
+```
+
+### New Feature (Manual Pipeline)
 
 ```markdown
 # 1. Plan the feature
@@ -269,12 +348,18 @@ All other orchestration is done through the Task tool and sub-agents.
 
 ---
 
-## PRD Location
+## Artifact Locations
 
 - **Plans**: `.agent/Plans/` (Claude's native plan mode)
 - **PRDs**: `.agent/Tasks/PRD-*.md` (structured requirements)
+- **DEV_PRDs**: `.agent/Tasks/DEV_PRD_WORK_*.md` (orchestration pipeline output)
+- **Specs**: `.agent/Tasks/SPEC_WORK_*.md` (executable specifications)
+- **Templates**: `.agent/Tasks/TEMPLATE_*.md` (DEV_PRD and Spec templates)
 - **Archive**: `.agent/Plans/archive/` (completed plans)
+- **Orchestration SOP**: `.agent/SOPs/orchestration_workflow.md`
 
 ---
 
-**See individual agent files for detailed capabilities and examples.**
+**See individual agent files for detailed capabilities:**
+- `.claude/agents/` - Orchestration pipeline agents
+- `.agent/Agents/` - Development sub-agents

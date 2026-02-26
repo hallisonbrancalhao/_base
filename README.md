@@ -32,8 +32,11 @@ Arquitetura de libs documentada com:
 
 | Command | Propósito |
 |---------|-----------|
-| `/plan` | Planeja feature com sub-agentes |
-| `/task` | Implementa seguindo padrões |
+| `/plan` | Planeja uma task (WORK-xxxx) com investigação e criação de DEV_PRD |
+| `/orchestrate` | Orquestra multiplas tasks em paralelo (classificação, análise, PRDs) |
+| `/spec` | Converte DEV_PRDs aprovadas em specs executáveis |
+| `/task` | Implementa uma spec seguindo padrões |
+| `/task-team` | Implementa multiplas specs em paralelo via Agent Teams |
 | `/review` | Code review automatizado |
 | `/validate` | Roda lint, test, build |
 | `/commit` | Gera commit convencional |
@@ -53,18 +56,32 @@ Arquitetura de libs documentada com:
 | `SessionStart` | Carrega git log e arquivos alterados |
 | `Setup` | Executa `pnpm install` no --init |
 
+### Agentes Especializados
+
+```
+.claude/agents/               → Agentes do pipeline de orquestração
+├── orchestrator.md           → Coordena multi-task workflows
+├── bug-investigator.md       → Investiga bugs (root cause, data flow)
+├── enhancement-analyst.md    → Analisa melhorias (business rules, reuso)
+├── prd-writer.md             → Cria DEV_PRDs legíveis para review
+├── spec-writer.md            → Converte PRDs em specs executáveis
+└── implementer.md            → Teammate que implementa 1 spec end-to-end
+
+.agent/Agents/                → 15+ sub-agentes de desenvolvimento
+├── @coder, @test-writer, @docs-writer
+├── @debugger, @explorer
+├── @qa-runner, @arch-validator, @code-reviewer
+└── @ux-researcher, @ui-designer
+```
+
 ### Estrutura .agent/
 
 ```
 .agent/
-├── Agents/      → 15+ sub-agentes especializados
-│   ├── @coder, @test-writer, @docs-writer
-│   ├── @debugger, @explorer
-│   ├── @qa-runner, @arch-validator, @code-reviewer
-│   └── @ux-researcher, @ui-designer
+├── Agents/      → Sub-agentes de desenvolvimento
 ├── System/      → Padrões técnicos
-├── SOPs/        → Procedimentos
-├── Tasks/       → PRDs
+├── SOPs/        → Procedimentos (inclui orchestration_workflow.md)
+├── Tasks/       → PRDs, DEV_PRDs, Specs e templates
 └── Plans/       → Planos em andamento
 ```
 
@@ -93,20 +110,68 @@ pnpm install
 ### Projeto Existente
 
 ```bash
-# Sincroniza a estrutura de contextos
+# Sincroniza a estrutura de contextos (de dentro do _base)
 ./scripts/sync-context.sh ~/projects/meu-projeto
 
 # Ou com preview
 ./scripts/sync-context.sh ~/projects/meu-projeto --dry-run
 ```
 
+### Atualizar Projeto Existente
+
+```bash
+# De dentro do projeto alvo (auto-detecta _base)
+.claude/hooks/setup.sh --update
+
+# Preview sem fazer alterações
+.claude/hooks/setup.sh --update --dry-run
+
+# Com _base customizado
+.claude/hooks/setup.sh --update --base ~/dev/_base
+
+# De dentro do _base, apontando para o projeto
+.claude/hooks/setup.sh --update --target ~/projects/meu-projeto
+```
+
 ---
 
-## Scripts
+## Scripts e Setup
+
+### setup.sh --update
+
+Atualiza projetos existentes com a configuração mais recente do _base. Roda de dentro do projeto alvo.
+
+```bash
+# Preview do que seria atualizado
+.claude/hooks/setup.sh --update --dry-run
+
+# Aplica atualizações (auto-detecta _base)
+.claude/hooks/setup.sh --update
+
+# Especifica o _base manualmente
+.claude/hooks/setup.sh --update --base ~/Development/_base
+
+# Sem sincronizar MCP ou Tasks específicas
+.claude/hooks/setup.sh --update --no-mcp --no-tasks
+```
+
+| Flag | Descrição |
+|------|-----------|
+| `--base <path>` | Caminho do _base (auto-detectado se omitido) |
+| `--target <path>` | Caminho do projeto alvo (default: projeto atual) |
+| `--dry-run` | Mostra o que seria feito sem fazer alterações |
+| `--force` | Sobrescreve todos os arquivos sem backup |
+| `--no-mcp` | Não sincroniza .mcp.json |
+| `--no-tasks` | Não sincroniza .agent/Tasks/ (exceto templates) |
+| `--verbose` | Mostra progresso detalhado |
+
+**O que sincroniza**: `.claude/agents/`, `.claude/commands/`, `.claude/hooks/`, `.agent/SOPs/`, `.agent/Tasks/`, `.agent/System/`, `.agent/Agents/`, `.ruler/`, `CLAUDE.md`, `.claudeignore`
+
+**O que preserva**: `settings.local.json` (pessoal), `Tasks/README.md` (projeto-específico)
 
 ### sync-context.sh
 
-Sincroniza a estrutura de contextos para um projeto existente.
+Sincroniza a estrutura de contextos para um projeto existente (roda de dentro do _base).
 
 ```bash
 # Básico - sincroniza tudo
@@ -115,60 +180,16 @@ Sincroniza a estrutura de contextos para um projeto existente.
 # Preview sem fazer alterações
 ./scripts/sync-context.sh ~/projects/meu-projeto --dry-run
 
-# Força sobrescrever tudo
-./scripts/sync-context.sh ~/projects/meu-projeto --force
-
-# Não sincroniza .mcp.json (projeto já tem config própria)
-./scripts/sync-context.sh ~/projects/meu-projeto --no-mcp
-
-# Não sincroniza PRDs (mantém os do projeto)
-./scripts/sync-context.sh ~/projects/meu-projeto --no-tasks
-
-# Modo minimal - apenas essenciais
-./scripts/sync-context.sh ~/projects/meu-projeto --minimal
-
 # Combinações
 ./scripts/sync-context.sh ~/projects/meu-projeto --no-mcp --no-tasks --verbose
 ```
-
-#### Opções
-
-| Flag | Descrição |
-|------|-----------|
-| `--dry-run` | Mostra o que seria feito sem fazer alterações |
-| `--force` | Sobrescreve todos os arquivos sem perguntar |
-| `--no-mcp` | Não sincroniza .mcp.json |
-| `--no-tasks` | Não sincroniza .agent/Tasks/ (exceto README) |
-| `--minimal` | Apenas arquivos essenciais (commands, hooks, base rules) |
-| `--verbose` | Mostra progresso detalhado |
-| `--help` | Mostra ajuda |
-
-#### O que é sincronizado
-
-```
-.agent/           → Documentação e agentes
-.claude/          → Commands, hooks, skills, settings
-.ruler/           → Regras de injeção
-.claudeignore     → Exclusões de contexto
-.mcp.json         → Configuração de MCPs
-CLAUDE.md         → Instruções principais
-```
-
-#### Arquivos ignorados
-
-- `.DS_Store` e arquivos de sistema
-- `.claude/settings.local.json` (configurações locais do usuário)
-- PRDs específicos quando `--no-tasks` é usado
 
 ### init-context.sh
 
 Inicializa a estrutura de contextos em qualquer projeto, baixando do repositório remoto.
 
 ```bash
-# No diretório atual
 ./scripts/init-context.sh
-
-# Em outro diretório
 ./scripts/init-context.sh ~/projects/novo-projeto
 ```
 
@@ -237,16 +258,32 @@ Crie `.claude/settings.local.json` para configurações pessoais (não commitado
 
 ## Fluxo de Trabalho
 
-### Como funciona
+### Task Individual
 
 ```
-1. Você digita /plan
-2. Hook detecta e injeta contexto de arquitetura
-3. Sub-agentes rodam em paralelo (Explore + Plan + UX Research)
-4. PRD é gerado com YAML estruturado
-5. Você implementa com /task
-6. No commit, hooks validam lint/test/build
-7. Se passar, commit acontece. Se falhar, bloqueia.
+1. /plan WORK-1234           → Investiga e cria DEV_PRD
+2. Revisa DEV_PRD, marca "aprovado"
+3. /spec                     → Gera SPEC executável
+4. /task                     → Implementa a spec
+5. Hooks validam lint/test/build no commit
+```
+
+### Multi-Task (Orquestração)
+
+```
+1. /orchestrate WORK-1234 WORK-1235 WORK-1236
+   → Classifica cada task (bug/enhancement/feature)
+   → Analisa todas em paralelo (agentes especializados)
+   → Gera DEV_PRDs para cada uma
+
+2. Dev revisa e aprova cada DEV_PRD
+
+3. /spec
+   → Converte PRDs aprovadas em specs executáveis
+
+4. /task-team
+   → Implementa specs em paralelo (Agent Teams + worktrees)
+   → Cada teammate trabalha em isolamento
 ```
 
 ### Pipeline de Feature
@@ -274,7 +311,7 @@ Crie `.claude/settings.local.json` para configurações pessoais (não commitado
 ```
 .
 ├── .agent/                    # Documentação AI
-│   ├── Agents/                # Definições de agentes
+│   ├── Agents/                # Sub-agentes de desenvolvimento
 │   │   ├── analysis/          # @explorer, @debugger
 │   │   ├── automation/        # @git-operator, @nx-operator, @e2e-tester
 │   │   ├── design/            # @ux-researcher, @ui-designer
@@ -282,14 +319,32 @@ Crie `.claude/settings.local.json` para configurações pessoais (não commitado
 │   │   ├── planning/          # @task-planner
 │   │   └── quality/           # @qa-runner, @arch-validator, @code-reviewer
 │   ├── Plans/                 # Planos em andamento
-│   ├── Prompts/               # Templates de prompts
 │   ├── SOPs/                  # Procedimentos padrão
+│   │   └── orchestration_workflow.md  # Workflow multi-task
 │   ├── System/                # Documentação técnica
-│   └── Tasks/                 # PRDs
+│   └── Tasks/                 # PRDs, DEV_PRDs, Specs
+│       ├── TEMPLATE_dev_prd.md    # Template para DEV_PRDs
+│       └── TEMPLATE_spec.md       # Template para Specs
 ├── .claude/                   # Configuração Claude Code
+│   ├── agents/                # Agentes do pipeline de orquestração
+│   │   ├── orchestrator.md    # Coordena multi-task workflows
+│   │   ├── bug-investigator.md
+│   │   ├── enhancement-analyst.md
+│   │   ├── prd-writer.md
+│   │   ├── spec-writer.md
+│   │   └── implementer.md
 │   ├── commands/              # Slash commands
+│   │   ├── orchestrate.md     # /orchestrate - Multi-task
+│   │   ├── plan.md            # /plan - Single task
+│   │   ├── spec.md            # /spec - Gerar specs
+│   │   ├── task.md            # /task - Implementar
+│   │   └── task-team.md       # /task-team - Paralelo
 │   ├── hooks/                 # Scripts de hooks
-│   ├── skills/                # Skills dos agentes
+│   │   └── setup/             # Setup scripts
+│   │       ├── init.sh        # Dev setup
+│   │       ├── init-only.sh   # CI setup
+│   │       ├── update.sh      # Sync _base config
+│   │       └── maintenance.sh # Manutenção
 │   └── settings.json          # Configurações e hooks
 ├── .ruler/                    # Regras de injeção
 ├── scripts/                   # Scripts utilitários
