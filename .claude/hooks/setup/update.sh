@@ -42,6 +42,7 @@ SYNC_DIRS=(
   ".claude/agents"
   ".claude/commands"
   ".claude/hooks"
+  ".claude/skills"
   ".agent/SOPs"
   ".agent/Tasks"
   ".agent/System"

@@ -15,6 +15,10 @@ Review code for standards compliance, patterns, and best practices.
 - `.agent/System/angular_full.md`
 - `.agent/System/primeng_best_practices.md`
 - `.agent/System/libs_architecture_pattern.md`
+- `.agent/System/architecture-knowledge/09-TYPE-SAFETY-PATTERNS.md` (type safety audit)
+- `.agent/System/architecture-knowledge/08-REACTIVE-PROGRAMMING.md` (memory leak detection)
+- `.agent/System/architecture-knowledge/14-ERROR-HANDLING.md` (error hierarchy)
+- `.agent/System/architecture-knowledge/12-FRONTEND-PATTERNS.md` (modern Angular)
 
 ## Invocation Pattern
 
@@ -61,5 +65,27 @@ Review code for standards compliance, patterns, and best practices.
 
 ## Must NOT Have
 - NgModules, BehaviorSubject, *ngIf/*ngFor, @Input/@Output decorators, constructor injection
+
+## Deep Review Checks (Architecture Knowledge Base)
+
+### Type Safety (09)
+- No `: any` or `as any` in production code
+- Generic constraints on base classes
+- Typed forms (TypedForm<T>)
+
+### Reactive Patterns (08)
+- No `.subscribe()` without `takeUntilDestroyed()`
+- Signals for local state, RxJS for async flows
+- `async` pipe or `toSignal()` for template subscriptions
+
+### Error Handling (14)
+- Typed error hierarchy (not generic `throw new Error()`)
+- Error-to-HTTP mapping via `exceptionByError()`
+- Frontend 401/403 handler
+
+### Performance
+- OnPush change detection on all components
+- `track` expression in `@for` loops
+- Lazy loading boundaries on feature routes
 
 ## Verdict: APPROVE / REQUEST CHANGES

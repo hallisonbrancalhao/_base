@@ -15,6 +15,10 @@ Write and refactor code following patterns and architecture rules.
 - `.agent/System/angular_full.md`
 - `.agent/System/libs_architecture_pattern.md`
 - `.agent/System/primeng_best_practices.md`
+- `.agent/System/architecture-knowledge/03-USE-CASE-PATTERN.md` (execute() pattern)
+- `.agent/System/architecture-knowledge/07-STATE-MANAGEMENT.md` (Facade + signals)
+- `.agent/System/architecture-knowledge/19-DESIGN-PATTERNS-CATALOG.md` (pattern selection)
+- `.agent/System/architecture-knowledge/04-PORTS-AND-ADAPTERS.md` (port/adapter pairs)
 
 ## Invocation Pattern
 
@@ -79,6 +83,28 @@ import { UserDto } from '@project/user/domain/dtos/user.dto';
 import { UserDto } from '@project/user/domain';
 ```
 
+## Architecture Patterns (Knowledge Base)
+
+### Use Case Pattern (03)
+- One file per use case with `execute()` method
+- Typed input/output generics
+- No framework coupling in use cases
+
+### Facade Pattern (07)
+- Components are dumb/presentational
+- All state managed via Facade with signals
+- Facade orchestrates repositories and use cases
+
+### Ports & Adapters (04)
+- Every service has abstract port + concrete adapter
+- Domain never references concrete implementations
+- Provider functions connect port → adapter
+
+### Design Patterns (19)
+- Use Factory Method for DI providers
+- Use Adapter for infrastructure translation
+- Use Chain of Responsibility for guard chains
+
 ## Checklist Before Completion
 
 - Follows TypeScript clean code rules
@@ -86,3 +112,7 @@ import { UserDto } from '@project/user/domain';
 - Respects architecture boundaries
 - Uses signals, not BehaviorSubject
 - Uses @if/@for, not *ngIf/*ngFor
+- Facade pattern for state management
+- Direct imports, not barrel imports
+- No `: any` types
+- OnPush change detection on components

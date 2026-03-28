@@ -8,7 +8,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PROMPT=\"$CLAUDE_USER_CONTENT\"; BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null); if echo \"$BRANCH\" | grep -q '^design/'; then echo '<system-reminder>DESIGN BRANCH DETECTED: Follow .agent/SOPs/design_to_dev_workflow.md and .agent/Tasks/TEMPLATE_design_prd.md. Use PrimeNG components (NOT directives), dark mode surface colors, data-testid on interactive elements, standalone components with signals, @if/@for control flow. Mock data goes in __fixtures__/.</system-reminder>'; elif echo \"$PROMPT\" | grep -qiE 'implement|criar|adicionar|refactor|nx g|gerar|build|develop'; then echo '<system-reminder>IMPLEMENTATION DETECTED: Read .agent/System/libs_architecture_pattern.md and .agent/System/base_rules.md before implementing. Use Facade Pattern, standalone components, direct imports.</system-reminder>'; fi; exit 0",
+            "command": "PROMPT=\"$CLAUDE_USER_CONTENT\"; BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null); if echo \"$BRANCH\" | grep -q '^design/'; then echo '<system-reminder>DESIGN BRANCH DETECTED: Follow .agent/SOPs/design_to_dev_workflow.md and .agent/Tasks/TEMPLATE_design_prd.md. Use PrimeNG components (NOT directives), dark mode surface colors, data-testid on interactive elements, standalone components with signals, @if/@for control flow. Mock data goes in __fixtures__/.</system-reminder>'; elif echo \"$PROMPT\" | grep -qiE 'scaffold|new domain|create lib|new entity|criar dominio|nova lib|nova entidade'; then echo '<system-reminder>SCAFFOLD DETECTED: Use /scaffold command or @domain-scaffolder. Must create: domain + data-access + data-source + feature. Follow architecture-knowledge/11-MONOREPO-ARCHITECTURE.md. Required tags: type: + scope:. Update tsconfig.base.json paths.</system-reminder>'; elif echo \"$PROMPT\" | grep -qiE 'migrate|migrar|upgrade pattern|modernize|modernizar|convert ngIf|convert to signals'; then echo '<system-reminder>MIGRATION DETECTED: Use /migrate command or @migration-assistant. Consult architecture-knowledge/12-FRONTEND-PATTERNS.md for modern Angular patterns. Key: NgModules->standalone, *ngIf->@if, decorators->functions, BehaviorSubject->signals.</system-reminder>'; elif echo \"$PROMPT\" | grep -qiE 'implement|criar|adicionar|refactor|nx g|gerar|build|develop'; then echo '<system-reminder>IMPLEMENTATION DETECTED: Read .agent/System/libs_architecture_pattern.md and .agent/System/base_rules.md before implementing. Use Facade Pattern, standalone components, direct imports.</system-reminder>'; fi; exit 0",
             "timeout": 3
           }
         ]
@@ -20,7 +20,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "CMD=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r '.command'); echo \"$CMD\" | grep -qE '^git commit' || exit 0; BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null); if echo \"$BRANCH\" | grep -q '^design/'; then echo '🎨 Design branch: Running lint + build only...'; npx nx affected:lint --base=HEAD~1 2>/dev/null && npx nx affected:build --base=HEAD~1 2>/dev/null || { echo '❌ Lint/Build failed! Fix issues before committing.'; exit 2; }; elif echo \"$BRANCH\" | grep -q '^feature/'; then echo '🔍 Feature branch: Checking for TODO throws...'; if git diff --cached --name-only | xargs grep -l \"throw new Error('TODO')\" 2>/dev/null; then echo '❌ BLOCKED: Found throw new Error(TODO) in staged files. Replace with real implementation.'; exit 2; fi; echo '🔍 Running full validation...'; npx nx affected:lint --base=HEAD~1 2>/dev/null && npx nx affected:test --base=HEAD~1 2>/dev/null && npx nx affected:build --base=HEAD~1 2>/dev/null || { echo '❌ Validation failed! Fix issues before committing.'; exit 2; }; else echo '🔍 Pre-commit: Running Nx affected validations...'; npx nx affected:lint --base=HEAD~1 2>/dev/null && npx nx affected:test --base=HEAD~1 2>/dev/null && npx nx affected:build --base=HEAD~1 2>/dev/null || { echo '❌ Validation failed! Fix issues before committing.'; exit 2; }; fi; exit 0",
+            "command": "CMD=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r '.command'); echo \"$CMD\" | grep -qE '^git commit' || exit 0; BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null); STAGED=$(git diff --cached --name-only -- '*.ts' '*.tsx' 2>/dev/null); ANY_COUNT=0; if [ -n \"$STAGED\" ]; then ANY_COUNT=$(echo \"$STAGED\" | xargs grep -l ': any' 2>/dev/null | wc -l | tr -d ' '); fi; if [ \"$ANY_COUNT\" -gt 0 ]; then echo \"<system-reminder>TYPE SAFETY WARNING: $ANY_COUNT staged file(s) contain ': any'. Consider replacing with proper types before commit. Run /type-audit to see details.</system-reminder>\"; fi; if echo \"$BRANCH\" | grep -q '^design/'; then echo 'Design branch: Running lint + build...'; npx nx affected:lint --base=HEAD~1 2>/dev/null && npx nx affected:build --base=HEAD~1 2>/dev/null || { echo 'Lint/Build failed! Fix before committing.'; exit 2; }; elif echo \"$BRANCH\" | grep -q '^feature/'; then if git diff --cached --name-only | xargs grep -l \"throw new Error('TODO')\" 2>/dev/null; then echo 'BLOCKED: Found throw new Error(TODO) in staged files.'; exit 2; fi; npx nx affected:lint --base=HEAD~1 2>/dev/null && npx nx affected:test --base=HEAD~1 2>/dev/null && npx nx affected:build --base=HEAD~1 2>/dev/null || { echo 'Validation failed!'; exit 2; }; else npx nx affected:lint --base=HEAD~1 2>/dev/null && npx nx affected:test --base=HEAD~1 2>/dev/null && npx nx affected:build --base=HEAD~1 2>/dev/null || { echo 'Validation failed!'; exit 2; }; fi; exit 0",
             "timeout": 600
           }
         ]
@@ -34,6 +34,26 @@
             "type": "command",
             "command": "PLANS_DIR=\"${CLAUDE_WORKING_DIRECTORY}/.agent/Plans\"; TASKS_DIR=\"${CLAUDE_WORKING_DIRECTORY}/.agent/Tasks\"; mkdir -p \"$TASKS_DIR\"; PLAN=$(find \"$PLANS_DIR\" -maxdepth 1 -name '*.md' -type f ! -name 'README*' -mmin -5 2>/dev/null | head -1); if [ -n \"$PLAN\" ]; then NAME=$(basename \"$PLAN\" .md | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | tr -cd '[:alnum:]_-'); PRD_ID=\"PRD-$(date +%Y-%m)-001\"; PRD_FILE=\"$TASKS_DIR/${PRD_ID}_${NAME}.md\"; echo \"<system-reminder>\"; echo \"PLAN APPROVED - PRD Creation\"; echo \"\"; echo \"Plan file: $PLAN\"; echo \"Create PRD at: $PRD_FILE\"; echo \"\"; echo \"Next steps:\"; echo \"1. Use Task tool with sub-agents to investigate context\"; echo \"2. Create structured PRD following .agent/Tasks/README.md template\"; echo \"3. Archive plan to .agent/Plans/archive/\"; echo \"\"; echo \"Recommended agents:\"; echo \"- Explore: Codebase patterns\"; echo \"- Plan: Architecture validation\"; echo \"- general-purpose with @ux-researcher: User needs (if UI)\"; echo \"</system-reminder>\"; fi; exit 0",
             "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r '.file_path // empty'); [ -z \"$FILE\" ] && exit 0; echo \"$FILE\" | grep -qE '\\.component\\.ts$' || exit 0; ISSUES=''; grep -q 'NgModule' \"$FILE\" 2>/dev/null && ISSUES=\"${ISSUES} [NgModule]\"; grep -qE '@Input\\(' \"$FILE\" 2>/dev/null && ISSUES=\"${ISSUES} [@Input]\"; grep -qE '@Output\\(' \"$FILE\" 2>/dev/null && ISSUES=\"${ISSUES} [@Output]\"; grep -q 'BehaviorSubject' \"$FILE\" 2>/dev/null && ISSUES=\"${ISSUES} [BehaviorSubject]\"; grep -q '\\*ngIf\\|\\*ngFor' \"$FILE\" 2>/dev/null && ISSUES=\"${ISSUES} [legacy-directives]\"; [ -z \"$ISSUES\" ] && exit 0; echo \"<system-reminder>COMPONENT PATTERN VIOLATION in $(basename \"$FILE\"):${ISSUES} - Must use: standalone, input()/output(), signals, @if/@for. Ref: architecture-knowledge/12-FRONTEND-PATTERNS.md</system-reminder>\"; exit 0",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r '.file_path // empty'); [ -z \"$FILE\" ] && exit 0; echo \"$FILE\" | grep -qE '\\.ts$' || exit 0; BARREL=$(grep -cE \"from '(@[a-z]+/[a-z-]+)'\" \"$FILE\" 2>/dev/null); [ \"$BARREL\" = '0' ] || [ -z \"$BARREL\" ] && exit 0; echo \"<system-reminder>BARREL IMPORT WARNING in $(basename \"$FILE\"): $BARREL barrel import(s) detected. Prefer direct imports: @scope/lib/path/file instead of @scope/lib. Ref: barrel_best_practices.md</system-reminder>\"; exit 0",
+            "timeout": 5
           }
         ]
       }

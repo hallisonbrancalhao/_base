@@ -207,6 +207,7 @@ sync_file() {
         local essential_patterns=(
             ".claude/commands/*"
             ".claude/hooks/*"
+            ".claude/skills/*"
             ".claude/settings.json"
             ".claudeignore"
             "CLAUDE.md"
@@ -214,6 +215,7 @@ sync_file() {
             ".agent/README.md"
             ".agent/System/base_rules.md"
             ".agent/System/README.md"
+            ".agent/System/architecture-knowledge/*"
             ".agent/Agents/README.md"
         )
 
