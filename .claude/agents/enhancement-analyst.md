@@ -5,7 +5,7 @@ description: >
   and module docs to identify reusable artifacts, extension points, gaps, and potential conflicts.
   Triggered by orchestrator for tasks classified as enhancements.
 tools: Read, Glob, Grep
-model: sonnet
+model: opus
 permissionMode: default
 maxTurns: 20
 memory: project
@@ -65,37 +65,45 @@ Return your analysis in this exact format:
 ## Enhancement Analysis: WORK-XXXX
 
 ### Summary
+
 [2-3 sentences: what the enhancement needs and which modules are involved]
 
 ### Related Use Cases
-| UC ID | Description | Module | Relevance |
-|-------|-------------|--------|-----------|
-| UC-XXX-001 | [name] | [module] | [how it relates] |
+
+| UC ID      | Description | Module   | Relevance        |
+| ---------- | ----------- | -------- | ---------------- |
+| UC-XXX-001 | [name]      | [module] | [how it relates] |
 
 ### Reusable Artifacts
-| Artifact | Module | Type | Path | Notes |
-|----------|--------|------|------|-------|
-| [name] | [module] | facade/service/component | `libs/...` | [why reusable] |
+
+| Artifact | Module   | Type                     | Path       | Notes          |
+| -------- | -------- | ------------------------ | ---------- | -------------- |
+| [name]   | [module] | facade/service/component | `libs/...` | [why reusable] |
 
 ### Needs Extension
-| Artifact | Module | Type | What to Change | Impact |
-|----------|--------|------|----------------|--------|
-| [name] | [module] | facade/service | [specific change] | [files affected] |
+
+| Artifact | Module   | Type           | What to Change    | Impact           |
+| -------- | -------- | -------------- | ----------------- | ---------------- |
+| [name]   | [module] | facade/service | [specific change] | [files affected] |
 
 ### Must Create New
-| Artifact | Type | Suggested Location | Reason |
-|----------|------|--------------------|--------|
-| [name] | facade/service/component/dto | `libs/scope/lib/path` | [why new] |
+
+| Artifact | Type                         | Suggested Location    | Reason    |
+| -------- | ---------------------------- | --------------------- | --------- |
+| [name]   | facade/service/component/dto | `libs/scope/lib/path` | [why new] |
 
 ### Potential Conflicts
-| Rule/Artifact | Module | Conflict Description | Resolution |
-|---------------|--------|---------------------|------------|
-| [name] | [module] | [what conflicts] | [how to resolve] |
+
+| Rule/Artifact | Module   | Conflict Description | Resolution       |
+| ------------- | -------- | -------------------- | ---------------- |
+| [name]        | [module] | [what conflicts]     | [how to resolve] |
 
 ### Recommended Architecture
+
 [Brief description of the recommended approach, referencing the Facade Pattern and lib structure rules]
 
 ### Complexity Assessment
+
 - **Scope**: S | M | L | XL
 - **Files to modify**: [count]
 - **Files to create**: [count]

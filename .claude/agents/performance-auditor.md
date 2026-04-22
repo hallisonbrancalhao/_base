@@ -5,7 +5,7 @@ description: >
   Detecta N+1 queries, race conditions e memory leaks. Acionado automaticamente em relatórios
   completos de validação do projeto ou sob demanda via `@performance-auditor`.
 tools: Read, Glob, Grep, Bash
-model: sonnet
+model: opus
 permissionMode: default
 maxTurns: 30
 memory: project
@@ -26,6 +26,7 @@ Detectar e reportar três classes de problemas que IAs frequentemente introduzem
 ### Passo 1 — Escopo
 
 Ler a instrução do orquestrador. Determinar:
+
 - Escopo: `affected`, `lib:[name]` ou `all`
 - Detectores ativos: n-plus-one, race-condition, memory-leak ou all
 
@@ -34,6 +35,7 @@ Ler a instrução do orquestrador. Determinar:
 **Técnica principal**: validar se existe **middleware contador de queries** plugado no ORM (ex: subscriber do TypeORM contando `afterLoad` por request). Recomendar threshold padrão de 15 queries/request para logar warning + marcar review.
 
 Além disso:
+
 - `rg "for.*await.*find" libs/**/data-source`
 - `rg "\.map\(async.*find" libs/**/data-source`
 - Verificar `relations` ausentes em repositories TypeORM
@@ -45,6 +47,7 @@ Além disso:
 **Técnica principal**: validar se existe **property-based test** (lib `fast-check` para Node/TS) nas operações concorrentes críticas (saldo, estoque, contadores). A lib bombardeia a função com inputs aleatórios tentando quebrar invariantes.
 
 Além disso:
+
 - Backend: read-modify-write sem transação/lock (`setLock('pessimistic_write')`); contadores via `find → save` (deve ser `UPDATE SET x = x + 1`); jobs/cron sem idempotency key
 - Frontend: `mergeMap` em typeahead (deve ser `switchMap`); `signal.set(signal() + 1)` em vez de `signal.update`; `effect()` escrevendo HTTP sem proteção
 
@@ -53,6 +56,7 @@ Além disso:
 **Técnica principal**: rodar **profiling de processo vivo** — `py-spy` para Python, Chrome DevTools Heap Snapshot para Node/Angular, `pprof` para Go. Pedir 2 snapshots (antes/depois de ação repetida) e comparar retenção.
 
 Além disso:
+
 - Frontend: `.subscribe(` sem `takeUntilDestroyed()`; `setInterval`/`addEventListener` sem cleanup via `DestroyRef`; `BehaviorSubject` em `providedIn: 'root'` sem `complete()`; arrays crescendo indefinidamente
 - Backend: caches globais `Map`/`Object` sem TTL; event emitters com listeners por request; streams sem `pipe`/`destroy()`; filas sem dead-letter
 
@@ -64,19 +68,24 @@ Retornar análise neste formato:
 ## Performance Audit Report
 
 ### Summary
+
 - Files scanned: N
 - Findings: critical=X, high=Y, medium=Z
 
 ### N+1 Findings
+
 | File | Line | Severity | Evidence | Fix |
 
 ### Race Condition Findings
+
 | File | Line | Severity | Evidence | Fix |
 
 ### Memory Leak Findings
+
 | File | Line | Severity | Evidence | Fix |
 
 ### Top 3 Ações Prioritárias
+
 1. ...
 2. ...
 3. ...

@@ -5,7 +5,7 @@ description: >
   Executa security lint (SAST), secret scan, scan de exploits em dependências e valida pinagem
   de versões. Acionado em relatórios completos ou via `@security-auditor`.
 tools: Read, Glob, Grep, Bash
-model: sonnet
+model: opus
 permissionMode: default
 maxTurns: 30
 memory: project
@@ -27,11 +27,13 @@ Proteger o projeto contra 4 vetores que IAs frequentemente introduzem:
 ### Pilar 1 — Security Lint
 
 Frontend (Angular):
+
 - `innerHTML`, `bypassSecurityTrust*`, `eval`, `new Function`
 - JWT em `localStorage` (deve ser `HttpOnly cookie`)
 - `window.location.href = userInput` (open redirect)
 
 Backend (NestJS):
+
 - Endpoints sem `@UseGuards(AuthGuard)` nem rate-limit
 - DTOs sem `class-validator`
 - SQL concat em vez de parâmetros
@@ -39,6 +41,7 @@ Backend (NestJS):
 - Falta de `helmet`, `csurf`
 
 Comandos:
+
 ```bash
 pnpm dlx semgrep --config auto libs/
 nx lint --plugin @angular-eslint/security
@@ -47,6 +50,7 @@ nx lint --plugin @angular-eslint/security
 ### Pilar 2 — Secret Scan
 
 Regex patterns:
+
 ```bash
 rg -i "(api[_-]?key|secret|token|password|bearer)\s*[:=]\s*['\"][^'\"]{16,}" --type ts
 rg "AKIA[0-9A-Z]{16}"       # AWS
@@ -55,6 +59,7 @@ rg "-----BEGIN.*PRIVATE KEY-----"
 ```
 
 Ferramentas:
+
 ```bash
 gitleaks detect --source . --verbose
 trufflehog filesystem .
@@ -81,6 +86,7 @@ rg "FROM .*:latest" Dockerfile*
 ```
 
 Checklist:
+
 - [ ] Lockfile commitado
 - [ ] `engines.node` fixado
 - [ ] `packageManager` fixado
@@ -93,21 +99,27 @@ Checklist:
 ## Security Audit Report
 
 ### Summary
+
 | Pilar | Critical | High | Medium | Low |
 
 ### Security Lint
+
 | File | Line | Rule | Severity | Evidence | Fix |
 
 ### Secret Scan
+
 | File | Line | Type | Action (revogar/rotacionar) |
 
 ### Lib Exploit
+
 | Package | Version | CVE | Severity | Fix Version |
 
 ### Version Pinning
+
 | File | Dependency | Current | Recommendation |
 
 ### Ações Prioritárias
+
 1. [critical] ...
 2. [high] ...
 ```

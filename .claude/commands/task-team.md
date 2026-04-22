@@ -26,11 +26,11 @@ Apresente a lista:
 ```markdown
 ## Specs Disponiveis
 
-| # | Spec | Task | Tipo | Branch | Base |
-|---|------|------|------|--------|------|
-| 1 | SPEC_WORK_1234.md | WORK-1234 | bug | feature/WORK-1234-nome | master |
-| 2 | SPEC_WORK_1235.md | WORK-1235 | enhancement | feature/WORK-1235-nome | develop |
-| 3 | SPEC_WORK_1236.md | WORK-1236 | feature | feature/WORK-1236-nome | develop |
+| #   | Spec              | Task      | Tipo        | Branch                 | Base    |
+| --- | ----------------- | --------- | ----------- | ---------------------- | ------- |
+| 1   | SPEC_WORK_1234.md | WORK-1234 | bug         | feature/WORK-1234-nome | master  |
+| 2   | SPEC_WORK_1235.md | WORK-1235 | enhancement | feature/WORK-1235-nome | develop |
+| 3   | SPEC_WORK_1236.md | WORK-1236 | feature     | feature/WORK-1236-nome | develop |
 ```
 
 Pergunte: "Quais specs deseja implementar em paralelo? (todas / numeros separados por virgula / cancelar)"
@@ -46,8 +46,8 @@ Antes de criar o team, verifique se as specs selecionadas tem overlap de arquivo
 ```markdown
 ## Alerta: Conflito de Arquivos
 
-| Arquivo | Specs que tocam |
-|---------|----------------|
+| Arquivo                       | Specs que tocam                |
+| ----------------------------- | ------------------------------ |
 | `libs/shared/data-access/...` | SPEC_WORK_1234, SPEC_WORK_1235 |
 
 Recomendacao: Implemente WORK-1234 e WORK-1235 sequencialmente.
@@ -113,7 +113,7 @@ Task tool:
   team_name: "work-sprint-YYYYMMDD"
   name: "dev-WORK-XXXX"
   subagent_type: general-purpose
-  model: sonnet
+  model: opus
   isolation: worktree
   prompt: |
     Voce e um desenvolvedor Angular/Nx especializado. Sua unica tarefa e implementar o WORK-XXXX.
@@ -141,13 +141,14 @@ Apos spawnar todos os teammates:
 ```markdown
 ## Team Criado
 
-| Teammate | Spec | Status |
-|----------|------|--------|
+| Teammate      | Spec              | Status  |
+| ------------- | ----------------- | ------- |
 | dev-WORK-1234 | SPEC_WORK_1234.md | spawned |
 | dev-WORK-1235 | SPEC_WORK_1235.md | spawned |
 | dev-WORK-1236 | SPEC_WORK_1236.md | spawned |
 
 ### Comandos uteis:
+
 - **Shift+Down**: Alternar entre teammates (in-process mode)
 - **Ctrl+T**: Ver task list compartilhada
 - **Enter**: Ver sessao do teammate selecionado
@@ -180,13 +181,14 @@ SendMessage:
 ```markdown
 ## Sprint Concluido
 
-| Spec | Status | Commit |
-|------|--------|--------|
-| SPEC_WORK_1234.md | done | feat(scope): WORK-1234 ... |
-| SPEC_WORK_1235.md | done | feat(scope): WORK-1235 ... |
-| SPEC_WORK_1236.md | blocked | [motivo] |
+| Spec              | Status  | Commit                     |
+| ----------------- | ------- | -------------------------- |
+| SPEC_WORK_1234.md | done    | feat(scope): WORK-1234 ... |
+| SPEC_WORK_1235.md | done    | feat(scope): WORK-1235 ... |
+| SPEC_WORK_1236.md | blocked | [motivo]                   |
 
 ### Proximos passos:
+
 - Specs done: prontas para PR
 - Specs blocked: resolver bloqueio e re-executar /task-team
 - Cleanup PRDs: execute /spec cleanup

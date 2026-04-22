@@ -5,7 +5,7 @@ description: >
   identifies affected files, and produces structured bug analysis for PRD creation.
   Triggered by orchestrator for tasks classified as bugs.
 tools: Read, Glob, Grep, Bash
-model: sonnet
+model: opus
 permissionMode: default
 maxTurns: 25
 memory: project
@@ -61,18 +61,21 @@ Follow this exact 5-step process for every bug:
 
 Return your analysis in this exact format:
 
-~~~markdown
+```markdown
 ## Bug Analysis: WORK-XXXX
 
 ### Root Cause
+
 [1-2 sentences explaining the root cause]
 
 ### Category
+
 [regression | missing-implementation | edge-case | race-condition | data-mapping | other]
 
 ### Affected Files
-| File | Role | Issue |
-|------|------|-------|
+
+| File              | Role                           | Issue                       |
+| ----------------- | ------------------------------ | --------------------------- |
 | `path/to/file.ts` | [component/facade/service/etc] | [what's wrong in this file] |
 
 ### Data Flow Trace
@@ -82,20 +85,23 @@ Return your analysis in this exact format:
                                   BUG IS HERE: [explanation]
 
 ### Suggested Fix
+
 1. In `path/to/file.ts`: [what to change]
 2. In `path/to/other.ts`: [what to change]
 
 ### Related Modules
-| Module | Relevance |
-|--------|-----------|
+
+| Module     | Relevance          |
+| ---------- | ------------------ |
 | [mod_name] | [why it's related] |
 
 ### Risk Assessment
+
 - **Fix Complexity**: S | M | L
 - **Regression Risk**: low | medium | high
 - **Files to Change**: [count]
 - **Tests to Add/Update**: [count]
-~~~
+```
 
 ## Rules
 

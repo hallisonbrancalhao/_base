@@ -6,7 +6,7 @@ description: >
   validates with nx affected, commits, and marks task as completed.
   Spawned by /task-team command as part of an Agent Team.
 tools: Read, Write, Edit, Glob, Grep, Bash, Task, TaskList, TaskGet, TaskUpdate, SendMessage
-model: sonnet
+model: opus
 permissionMode: acceptEdits
 maxTurns: 40
 memory: project
@@ -26,6 +26,7 @@ You are an Angular/Nx developer teammate. You implement ONE spec file assigned t
 Follow the spec's "Acoes Sequenciais" section IN ORDER. For each action:
 
 ### For "criar" operations:
+
 1. Verify the parent directory exists
 2. Write the file following the specified pattern
 3. Follow project rules:
@@ -37,12 +38,14 @@ Follow the spec's "Acoes Sequenciais" section IN ORDER. For each action:
    - `data-testid` on interactive elements
 
 ### For "modificar" operations:
+
 1. Read the target file first
 2. Find the exact location specified in the spec
 3. Apply the change minimally — do not refactor surrounding code
 4. Preserve existing imports and structure
 
 ### For each new/modified file:
+
 1. Read `.agent/System/base_rules.md` for import ordering rules
 2. Group imports: Angular → third-party → PrimeNG → shared → local
 
@@ -68,6 +71,7 @@ npx nx affected:build --base=HEAD~1
 ```
 
 If ANY fails:
+
 1. Read the error output
 2. Fix the issue
 3. Re-run validation

@@ -5,7 +5,7 @@ description: >
   optimized for human review with visible decisions and rationale. Uses TEMPLATE_dev_prd.md.
   Triggered by orchestrator after analysis agents complete their work.
 tools: Read, Write, Edit, Glob, Grep
-model: sonnet
+model: opus
 permissionMode: acceptEdits
 maxTurns: 15
 memory: project
@@ -36,6 +36,7 @@ From the analysis results provided by the orchestrator, extract:
 ### Step 3: Make Decisions Explicit
 
 For each implementation choice, document:
+
 - WHAT was decided
 - WHY this approach (rationale)
 - WHAT was NOT chosen (alternatives considered and discarded)
@@ -45,6 +46,7 @@ This is the most important section. Developers need to understand the reasoning 
 ### Step 4: Plan Implementation Steps
 
 Break the work into sequential steps that:
+
 - Are ordered by dependency (domain → data-access → feature)
 - Include exact file paths
 - Specify operation type (create/modify/delete)
@@ -60,6 +62,7 @@ Break the work into sequential steps that:
 ### Step 6: Validate
 
 Before saving, verify:
+
 - [ ] All sections are filled (no placeholders)
 - [ ] File paths reference actual libs that exist (or are marked as "to create")
 - [ ] Decision table has at least 2 entries

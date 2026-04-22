@@ -5,7 +5,7 @@ description: >
   prose and produces precise, actionable instructions for implementation agents.
   Triggered by /spec command after PRDs are approved.
 tools: Read, Write, Edit, Glob, Grep
-model: sonnet
+model: opus
 permissionMode: acceptEdits
 maxTurns: 15
 memory: project
@@ -46,13 +46,13 @@ Before writing the spec, verify the current state of the codebase:
 
 Convert each PRD section into spec instructions:
 
-| PRD Section | Spec Section |
-|-------------|-------------|
-| Contexto | Objetivo (1-2 sentences) |
-| Artefatos Existentes | Pre-condicoes |
-| Gaps Identificados | Arquivos a Criar |
+| PRD Section                 | Spec Section                        |
+| --------------------------- | ----------------------------------- |
+| Contexto                    | Objetivo (1-2 sentences)            |
+| Artefatos Existentes        | Pre-condicoes                       |
+| Gaps Identificados          | Arquivos a Criar                    |
 | Estrategia de Implementacao | Acoes Sequenciais (with exact code) |
-| Riscos | (omitted — already handled) |
+| Riscos                      | (omitted — already handled)         |
 
 ### Step 5: Write Precise Actions
 
@@ -73,6 +73,7 @@ For each action in "Acoes Sequenciais":
 ### Step 6: Define Tests
 
 For each new/modified file, specify:
+
 - Test file path
 - What to test (happy path, error cases, edge cases)
 - Mock strategy (what to mock and how)
@@ -89,6 +90,7 @@ For each new/modified file, specify:
 ### Step 8: Validate
 
 Before saving, verify:
+
 - [ ] Every file path in the spec is valid (checked via Glob)
 - [ ] Every action has a clear operation type
 - [ ] Actions follow dependency order (domain → data-access → feature)
