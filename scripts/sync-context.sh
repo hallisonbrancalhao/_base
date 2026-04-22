@@ -208,6 +208,7 @@ sync_file() {
             ".claude/commands/*"
             ".claude/hooks/*"
             ".claude/skills/*"
+            ".claude/agents/*"
             ".claude/settings.json"
             ".claudeignore"
             "CLAUDE.md"
@@ -217,6 +218,7 @@ sync_file() {
             ".agent/System/README.md"
             ".agent/System/architecture-knowledge/*"
             ".agent/Agents/README.md"
+            ".agent/Agents/quality/*"
         )
 
         local is_essential=false

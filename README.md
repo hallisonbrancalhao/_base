@@ -44,6 +44,7 @@ Arquitetura de libs documentada com:
 | `/e2e` | Testes E2E |
 | `/pr` | Cria/revisa PRs |
 | `/affected` | Análise de impacto |
+| `/audit-report` | **AI-Guard**: roda performance + segurança + arquitetura em paralelo |
 
 ### Hooks Automatizados
 
@@ -71,8 +72,30 @@ Arquitetura de libs documentada com:
 ├── @coder, @test-writer, @docs-writer
 ├── @debugger, @explorer
 ├── @qa-runner, @arch-validator, @code-reviewer
+├── @performance-auditor, @security-auditor, @architecture-reviewer  # AI-Guard
 └── @ux-researcher, @ui-designer
 ```
+
+### 🛡️ AI-Guard (auditoria de código gerado por IA)
+
+Três agents especializados em detectar bugs introduzidos por LLMs, expostos via slash command `/audit-report`:
+
+| Agent | Detecta |
+|-------|---------|
+| `@performance-auditor` | N+1 queries, race conditions, memory leaks |
+| `@security-auditor` | Security lint (SAST), secret scan, lib exploit (SCA), pinagem de versão |
+| `@architecture-reviewer` | Tradeoffs não documentados, falta de failure tests, gaps de disaster recovery |
+
+**Uso**:
+
+```bash
+/audit-report                  # Apenas projetos afetados pelo último commit
+/audit-report all              # Codebase completo
+/audit-report lib:user         # Escopo específico
+/audit-report feature:auth     # Feature específica
+```
+
+Relatório consolidado é salvo em `.agent/Tasks/audit-reports/YYYY-MM-DD-audit-report.md` com ranking de severidade (`critical` | `high` | `medium` | `low`) e plano de ação priorizado.
 
 ### Estrutura .agent/
 
@@ -192,6 +215,38 @@ Inicializa a estrutura de contextos em qualquer projeto, baixando do repositóri
 ./scripts/init-context.sh
 ./scripts/init-context.sh ~/projects/novo-projeto
 ```
+
+### update-ai-guard.sh
+
+Aplica **apenas** o pacote AI-Guard (3 agents + 3 skills + slash command + 3 docs espelho) em projetos que já possuem `.agent/` e `.claude/` configurados.
+
+```bash
+# Preview
+./scripts/update-ai-guard.sh ~/projects/meu-projeto --dry-run
+
+# Aplica
+./scripts/update-ai-guard.sh ~/projects/meu-projeto
+
+# Com detalhes
+./scripts/update-ai-guard.sh ~/projects/meu-projeto --verbose
+```
+
+**Arquivos sincronizados** (10 no total):
+
+```
+.claude/skills/performance-auditor/SKILL.md
+.claude/skills/security-auditor/SKILL.md
+.claude/skills/architecture-reviewer/SKILL.md
+.claude/agents/performance-auditor.md
+.claude/agents/security-auditor.md
+.claude/agents/architecture-reviewer.md
+.claude/commands/audit-report.md
+.agent/Agents/quality/@performance-auditor.md
+.agent/Agents/quality/@security-auditor.md
+.agent/Agents/quality/@architecture-reviewer.md
+```
+
+Útil quando você quer cherry-pick da feature AI-Guard sem sobrescrever outros arquivos da base.
 
 ---
 
@@ -317,7 +372,8 @@ Crie `.claude/settings.local.json` para configurações pessoais (não commitado
 │   │   ├── design/            # @ux-researcher, @ui-designer
 │   │   ├── development/       # @coder, @test-writer, @docs-writer
 │   │   ├── planning/          # @task-planner
-│   │   └── quality/           # @qa-runner, @arch-validator, @code-reviewer
+│   │   └── quality/           # @qa-runner, @arch-validator, @code-reviewer,
+│   │                          # @performance-auditor, @security-auditor, @architecture-reviewer
 │   ├── Plans/                 # Planos em andamento
 │   ├── SOPs/                  # Procedimentos padrão
 │   │   └── orchestration_workflow.md  # Workflow multi-task
@@ -338,7 +394,12 @@ Crie `.claude/settings.local.json` para configurações pessoais (não commitado
 │   │   ├── plan.md            # /plan - Single task
 │   │   ├── spec.md            # /spec - Gerar specs
 │   │   ├── task.md            # /task - Implementar
-│   │   └── task-team.md       # /task-team - Paralelo
+│   │   ├── task-team.md       # /task-team - Paralelo
+│   │   └── audit-report.md    # /audit-report - AI-Guard (perf + sec + arch)
+│   ├── skills/                # Skills especializadas
+│   │   ├── performance-auditor/   # N+1, race condition, memory leak
+│   │   ├── security-auditor/      # SAST, secret scan, SCA, pinning
+│   │   └── architecture-reviewer/ # Tradeoffs, reliability, disaster recovery
 │   ├── hooks/                 # Scripts de hooks
 │   │   └── setup/             # Setup scripts
 │   │       ├── init.sh        # Dev setup
@@ -350,6 +411,7 @@ Crie `.claude/settings.local.json` para configurações pessoais (não commitado
 ├── scripts/                   # Scripts utilitários
 │   ├── sync-context.sh        # Sincroniza contextos
 │   ├── init-context.sh        # Inicializa contextos
+│   ├── update-ai-guard.sh     # Aplica apenas AI-Guard (10 arquivos)
 │   └── README.md              # Documentação scripts
 ├── .claudeignore              # Exclusões de contexto
 ├── .mcp.json                  # MCPs configurados
@@ -373,6 +435,51 @@ pnpm nx affected:build --base=main
 # Gerar libs
 pnpm nx g @nx/angular:lib [name] --directory=[scope] --standalone
 pnpm nx g @nx/js:lib domain --directory=[scope]
+```
+
+---
+
+## Changelog
+
+### 2026-04-21 — 🛡️ AI-Guard release
+
+Stack de auditoria para detectar bugs introduzidos por código gerado por IA. Baseada nos 3 pilares apresentados no vídeo do Lucas Montano (a partir de 7:53): performance, segurança e arquitetura.
+
+**Novos arquivos** (10):
+
+- Skills: `performance-auditor`, `security-auditor`, `architecture-reviewer` em `.claude/skills/`
+- Agents: idem em `.claude/agents/` (YAML frontmatter + protocolo de 5 passos)
+- Slash command: `/audit-report [scope]` em `.claude/commands/audit-report.md`
+- Docs espelho: `@performance-auditor.md`, `@security-auditor.md`, `@architecture-reviewer.md` em `.agent/Agents/quality/`
+
+**O que cada pilar cobre**:
+
+- **Performance**: middleware contador de queries (threshold 15/req), property-based testing com `fast-check`, profiling de processo vivo (py-spy, pprof, Chrome DevTools Heap Snapshot)
+- **Segurança**: Semgrep + ESLint security (SAST), gitleaks/trufflehog (secrets), osv-scanner + pnpm audit + Snyk (SCA), pinagem de `pnpm-lock.yaml`, Docker tags, GHA SHA
+- **Arquitetura**: ADRs obrigatórias para decisões irreversíveis, failure tests ("o que acontece se o banco cair no meio de um request?"), plano de contingência por dependência (DB, Redis, APIs externas), circuit breaker com `opossum`
+
+**Scripts de init atualizados**:
+
+- `scripts/update-ai-guard.sh` — novo script cirúrgico para aplicar apenas o AI-Guard
+- `scripts/sync-context.sh` — `--minimal` agora inclui `.claude/agents/*` e `.agent/Agents/quality/*`
+- `scripts/init-context.sh` — mensagem final mostra exemplos de `/audit-report`
+- `.claude/hooks/setup/update.sh` — next steps exibem os comandos `/audit-report`
+
+**Docs atualizadas**:
+
+- `CLAUDE.md`, `.claude/CLAUDE.md`, `.ruler/RULES.md` → nova linha `AI-Guard` na tabela Agent Categories
+- `.agent/Agents/README.md` → seção `quality/` lista os 3 novos agents + `/audit-report` no Quick Start
+- `.claude/commands/validate.md` → passo 4 dispara `/audit-report` em paralelo
+- `scripts/README.md` → documenta `update-ai-guard.sh`
+
+**Como aplicar em outro projeto**:
+
+```bash
+# Cirúrgico: só o AI-Guard
+~/Development/_base/scripts/update-ai-guard.sh ~/projects/meu-app
+
+# Completo: toda a base (inclui AI-Guard)
+cd ~/projects/meu-app && .claude/hooks/setup.sh --update
 ```
 
 ---

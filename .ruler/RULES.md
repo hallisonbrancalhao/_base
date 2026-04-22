@@ -13,6 +13,7 @@ All tasks **MUST** be delegated to specialized sub-agents. The primary agent act
 | Category | Agents | Purpose |
 |----------|--------|---------|
 | **Quality** | `@qa-runner`, `@arch-validator`, `@code-reviewer` | Validation & compliance |
+| **AI-Guard** | `@performance-auditor`, `@security-auditor`, `@architecture-reviewer` | Auditoria de código gerado por IA (N+1, race, leak, SAST, secrets, SCA, tradeoffs, DR) — via `/audit-report` |
 | **Development** | `@coder`, `@test-writer`, `@docs-writer` | Code generation |
 | **Automation** | `@e2e-tester`, `@git-operator`, `@nx-operator` | DevOps & tooling |
 | **Analysis** | `@explorer`, `@debugger` | Research & investigation |

@@ -2,6 +2,15 @@
 
 Scripts para gerenciar a estrutura de contextos de IA.
 
+**Scripts disponíveis**:
+
+| Script | Propósito |
+|--------|-----------|
+| `setup.sh --update` | Atualiza projeto existente com a base (roda de dentro do alvo) |
+| `sync-context.sh` | Sincroniza estrutura completa para um alvo (roda do _base) |
+| `init-context.sh` | Inicializa estrutura em projeto novo (baixa do GitHub) |
+| `update-ai-guard.sh` | Aplica APENAS AI-Guard (performance + segurança + arquitetura) |
+
 ## setup.sh --update
 
 Atualiza projetos existentes com a configuração mais recente do `_base`. Diferente do `sync-context.sh`, este script roda **de dentro do projeto alvo** e auto-detecta a localização do `_base`.
@@ -148,6 +157,52 @@ curl -fsSL https://raw.githubusercontent.com/USER/REPO/main/scripts/init-context
 # Inicializa em outro diretório
 curl -fsSL https://raw.githubusercontent.com/USER/REPO/main/scripts/init-context.sh | bash -s ~/projects/meu-projeto
 ```
+
+---
+
+## update-ai-guard.sh
+
+Aplica **apenas** a stack de auditoria AI-Guard (3 agents + 3 skills + 1 slash command + 3 docs espelho). Ideal para projetos que já têm `.agent/` e `.claude/` configurados e querem adicionar só o novo.
+
+### Uso
+
+```bash
+# Preview
+./scripts/update-ai-guard.sh ~/projects/meu-projeto --dry-run
+
+# Aplica
+./scripts/update-ai-guard.sh ~/projects/meu-projeto
+
+# Com detalhes
+./scripts/update-ai-guard.sh ~/projects/meu-projeto --verbose
+```
+
+### Arquivos sincronizados
+
+```
+.claude/skills/performance-auditor/SKILL.md
+.claude/skills/security-auditor/SKILL.md
+.claude/skills/architecture-reviewer/SKILL.md
+.claude/agents/performance-auditor.md
+.claude/agents/security-auditor.md
+.claude/agents/architecture-reviewer.md
+.claude/commands/audit-report.md
+.agent/Agents/quality/@performance-auditor.md
+.agent/Agents/quality/@security-auditor.md
+.agent/Agents/quality/@architecture-reviewer.md
+```
+
+### O que fazer depois
+
+1. Adicionar linha `AI-Guard` na tabela Agent Categories do `CLAUDE.md` e `.claude/CLAUDE.md`
+2. Atualizar `.agent/Agents/README.md` (seção quality)
+3. Rodar `/audit-report` no Claude Code
+
+### Quando usar
+
+- Projeto existente que **já sincronizou a base** e quer só o novo pacote AI-Guard
+- Evitar conflitos com ajustes locais em outros arquivos da base
+- Cherry-pick da feature sem sobrescrever mais nada
 
 ---
 

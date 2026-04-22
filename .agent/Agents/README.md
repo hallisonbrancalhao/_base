@@ -25,6 +25,12 @@ Classifies, analyzes in parallel, and creates DEV_PRDs for multiple tasks.
 ```
 Converts approved DEV_PRDs into machine-executable specs.
 
+### Running Full AI-Guard Audit
+```
+/audit-report [scope]
+```
+Executa os 3 auditores (performance + segurança + arquitetura) em paralelo e gera relatório consolidado. Escopo: `affected` (default) | `all` | `lib:[name]` | `feature:[name]`.
+
 ### Implementing a Spec
 ```
 /task
@@ -71,7 +77,10 @@ Sub-agents for code generation and project tasks:
 ├── quality/                   ← Code quality & validation
 │   ├── @qa-runner.md          ← Tests, build, lint execution
 │   ├── @arch-validator.md     ← Architecture compliance
-│   └── @code-reviewer.md      ← Code review & standards
+│   ├── @code-reviewer.md      ← Code review & standards
+│   ├── @performance-auditor.md ← N+1, race condition, memory leak
+│   ├── @security-auditor.md   ← SAST, secret scan, SCA, version pinning
+│   └── @architecture-reviewer.md ← Tradeoffs, reliability, contingency (DR)
 ├── development/               ← Code generation & refactoring
 │   ├── @coder.md              ← Write and refactor code
 │   ├── @frontend-developer.md ← Angular implementation
@@ -231,6 +240,10 @@ Task:
 | **Quality** |||
 | Run validations | `@qa-runner` | `general-purpose` |
 | Review code | `@code-reviewer` | `code-reviewer` |
+| Audit performance (N+1, race, leak) | `@performance-auditor` | `general-purpose` |
+| Audit security (SAST, secrets, SCA) | `@security-auditor` | `general-purpose` |
+| Review architecture (tradeoffs, DR) | `@architecture-reviewer` | `general-purpose` |
+| Complete AI-Guard report | `/audit-report` | Slash command |
 | **Operations** |||
 | Create commit | `@git-operator` | `general-purpose` |
 | Debug issue | `@debugger` | `general-purpose` |

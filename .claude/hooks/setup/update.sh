@@ -408,6 +408,12 @@ display_update_summary() {
     echo "     git add .claude .agent .ruler CLAUDE.md .claudeignore"
     echo "     git commit -m 'chore: sync AI context from _base'"
     echo ""
+    echo "  4. Novo: AI-Guard (performance + segurança + arquitetura)"
+    echo "     /audit-report                   # Projetos afetados"
+    echo "     /audit-report all               # Codebase completo"
+    echo "     /audit-report lib:user          # Escopo específico"
+    echo "     → Relatório em .agent/Tasks/audit-reports/"
+    echo ""
   fi
 
   if [[ $ERRORS -gt 0 ]]; then
