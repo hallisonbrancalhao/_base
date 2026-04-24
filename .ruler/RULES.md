@@ -2,6 +2,17 @@
 
 ## 🤖 Sub-Agent Execution Protocol
 
+---
+
+## Communication Style
+
+- No filler phrases ("I get it", "Awesome, here's what I'll do", "Great question")
+- Direct, efficient responses — code/config first, explanations when needed
+- Admit uncertainty rather than guess
+- Consider token efficiency in all additions
+
+---
+
 All tasks **MUST** be delegated to specialized sub-agents. The primary agent acts as orchestrator only.
 
 > **Full documentation**: `.agent/Agents/README.md`
@@ -10,13 +21,13 @@ All tasks **MUST** be delegated to specialized sub-agents. The primary agent act
 
 ### Agent Categories
 
-| Category | Agents | Purpose |
-|----------|--------|---------|
-| **Quality** | `@qa-runner`, `@arch-validator`, `@code-reviewer` | Validation & compliance |
-| **AI-Guard** | `@performance-auditor`, `@security-auditor`, `@architecture-reviewer` | Auditoria de código gerado por IA (N+1, race, leak, SAST, secrets, SCA, tradeoffs, DR) — via `/audit-report` |
-| **Development** | `@coder`, `@test-writer`, `@docs-writer` | Code generation |
-| **Automation** | `@e2e-tester`, `@git-operator`, `@nx-operator` | DevOps & tooling |
-| **Analysis** | `@explorer`, `@debugger` | Research & investigation |
+| Category        | Agents                                                                | Purpose                                                                                                      |
+| --------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **Quality**     | `@qa-runner`, `@arch-validator`, `@code-reviewer`                     | Validation & compliance                                                                                      |
+| **AI-Guard**    | `@performance-auditor`, `@security-auditor`, `@architecture-reviewer` | Auditoria de código gerado por IA (N+1, race, leak, SAST, secrets, SCA, tradeoffs, DR) — via `/audit-report` |
+| **Development** | `@coder`, `@test-writer`, `@docs-writer`                              | Code generation                                                                                              |
+| **Automation**  | `@e2e-tester`, `@git-operator`, `@nx-operator`                        | DevOps & tooling                                                                                             |
+| **Analysis**    | `@explorer`, `@debugger`                                              | Research & investigation                                                                                     |
 
 ---
 
@@ -25,6 +36,7 @@ All tasks **MUST** be delegated to specialized sub-agents. The primary agent act
 The `.agent/` folder contains all critical project documentation organized to provide complete context to developers and AI assistants. This documentation is separate from code but essential for understanding the project.
 
 👉 Read `.agent/README.md` for:
+
 - Complete folder structure
 - When to use Tasks/, System/, SOPs/
 - Documentation workflow
@@ -32,40 +44,44 @@ The `.agent/` folder contains all critical project documentation organized to pr
 - Quick index of all documents
 
 # Core Rules for AI Assistants
+
 ## 🎯 Primary Directive
 
 Architecture (Always Read First)
 
-| Document | Purpose |
-|----------|---------|
-| [TypeScript Clean Code](.agent/System/typescript_clean_code.md) | Naming, functions, comments policy |
-| [Nx Architecture Rules](.agent/System/nx_architecture_rules.md) | Lib dependencies & boundaries |
-| [Libs Architecture](.agent/System/libs_architecture_pattern.md) | Scope/Lib structure |
-| [Interface-DTO Patterns](.agent/System/interface-dto-architecture.md) | DTO conventions |
-| [Barrel Best Practices](.agent/System/barrel_best_practices.md) | Export rules |
+| Document                                                              | Purpose                            |
+| --------------------------------------------------------------------- | ---------------------------------- |
+| [TypeScript Clean Code](.agent/System/typescript_clean_code.md)       | Naming, functions, comments policy |
+| [Nx Architecture Rules](.agent/System/nx_architecture_rules.md)       | Lib dependencies & boundaries      |
+| [Libs Architecture](.agent/System/libs_architecture_pattern.md)       | Scope/Lib structure                |
+| [Interface-DTO Patterns](.agent/System/interface-dto-architecture.md) | DTO conventions                    |
+| [Barrel Best Practices](.agent/System/barrel_best_practices.md)       | Export rules                       |
 
 ## 🎯 Primary Directive
 
 **READ FIRST**: `.agent/README.md` - This file contains the complete structure and purpose of the `.agent/` folder.
 
 **CODE PATTERN**
+
 - Without explicit instructions, always follow the established code patterns in `.agent/System/` documentation. Without comments, assume the latest documented best practices apply.
 
 **COMMIT PATTERN**
+
 - Follow the commit message conventions in `.agent/SOPs/git_commit_instructions.md`.
 
 ### Import Organization
+
 → See `.agent/System/base_rules.md`
 
 ✅ Group imports by type: Angular, third-party libs, PrimeNG, shared, components  
 ❌ NO random import order, NO mixed dependencies without clear sections
 
 **Pattern**:
+
 ```typescript
 // Angular imports
 import { Component, input, output } from '@angular/core';
 import { signal } from '@angular/core';
-
 
 // PrimeNG imports
 import { ButtonModule } from 'primeng/button';
@@ -76,7 +92,6 @@ import { SharedService } from '@shared/services/shared.service';
 // Component imports
 import { HeaderComponent } from './header.component';
 ```
-
 
 ---
 
@@ -98,17 +113,17 @@ You have access to the MCP Launchpad (`mcpl`), a unified CLI for discovering and
 
 ## Available MCP Servers
 
-| Server | Type | Purpose |
-|--------|------|---------|
-| `primeng` | stdio | PrimeNG component documentation and examples |
-| `context7` | http | Context7 AI-powered documentation |
-| `gemini-cli` | stdio | Google Gemini AI integration |
-| `linear-server` | http | Linear issue tracking integration |
-| `firecrawl` | stdio | Web scraping and crawling |
-| `chrome-devtools` | stdio | Chrome DevTools debugging |
-| `nx-mcp` | stdio | Nx workspace tools and generators |
-| `figma` | http | Figma design integration |
-| `angular-cli` | stdio | Angular CLI and documentation |
+| Server            | Type  | Purpose                                      |
+| ----------------- | ----- | -------------------------------------------- |
+| `primeng`         | stdio | PrimeNG component documentation and examples |
+| `context7`        | http  | Context7 AI-powered documentation            |
+| `gemini-cli`      | stdio | Google Gemini AI integration                 |
+| `linear-server`   | http  | Linear issue tracking integration            |
+| `firecrawl`       | stdio | Web scraping and crawling                    |
+| `chrome-devtools` | stdio | Chrome DevTools debugging                    |
+| `nx-mcp`          | stdio | Nx workspace tools and generators            |
+| `figma`           | http  | Figma design integration                     |
+| `angular-cli`     | stdio | Angular CLI and documentation                |
 
 ## Important: Always Discover Before Calling
 
@@ -119,6 +134,7 @@ If you're unsure of the tool name, **always search first**. The `mcpl search` co
 ### Recommended Workflow
 
 1. **Search first** to find the right tool (shows required params):
+
    ```bash
    mcpl search "component"           # Find PrimeNG/Angular components
    mcpl search "scrape"              # Find firecrawl scraping tools
@@ -135,6 +151,7 @@ If you're unsure of the tool name, **always search first**. The `mcpl search` co
 ### Alternative: List Server Tools
 
 If you know which server to use but not the tool name:
+
 ```bash
 mcpl list primeng        # PrimeNG component tools
 mcpl list angular-cli    # Angular CLI tools
@@ -147,6 +164,7 @@ mcpl list firecrawl      # Web scraping tools
 ### Get Example Calls
 
 For complex tools, use `inspect --example` to get a ready-to-use example:
+
 ```bash
 mcpl inspect angular-cli search_documentation --example
 mcpl inspect figma get_design_context --example
@@ -156,6 +174,7 @@ mcpl inspect nx-mcp affected --example
 ## Common Use Cases
 
 ### Angular Development
+
 ```bash
 mcpl call angular-cli search_documentation '{"query": "signals"}'
 mcpl call angular-cli get_best_practices '{"workspacePath": "/path/to/angular.json"}'
@@ -163,12 +182,14 @@ mcpl call angular-cli find_examples '{"query": "reactive forms"}'
 ```
 
 ### PrimeNG Components
+
 ```bash
 mcpl call primeng get_component '{"name": "table"}'
 mcpl call primeng search_components '{"query": "input"}'
 ```
 
 ### Nx Workspace
+
 ```bash
 mcpl call nx-mcp list_projects '{}'
 mcpl call nx-mcp run_generator '{"generator": "@nx/angular:library", "options": {"name": "shared-ui"}}'
@@ -176,18 +197,21 @@ mcpl call nx-mcp affected '{"target": "test"}'
 ```
 
 ### Figma Integration
+
 ```bash
 mcpl call figma get_design_context '{"nodeId": "123:456", "fileKey": "abc123"}'
 mcpl call figma get_screenshot '{"nodeId": "123:456", "fileKey": "abc123"}'
 ```
 
 ### Linear Issues
+
 ```bash
 mcpl call linear-server list_issues '{}'
 mcpl call linear-server create_issue '{"title": "Bug fix", "teamId": "TEAM-1"}'
 ```
 
 ### Web Scraping (Firecrawl)
+
 ```bash
 mcpl call firecrawl scrape '{"url": "https://example.com"}'
 mcpl call firecrawl crawl '{"url": "https://docs.example.com", "maxDepth": 2}'
@@ -247,45 +271,53 @@ mcpl verify                              # Test all servers are working
 ## ⚡ Essential Rules
 
 ### BASE
+
 → See `.agent/System/base_rules.md`
 
 ### Angular
+
 → See `.agent/System/angular_best_practices.md`
 
 ✅ Standalone components, signals, `input()`/`output()`, `@if`/`@for`  
 ❌ NO NgModules, decorators, `*ngIf`/`*ngFor`, `ngClass`/`ngStyle`
 
 ### Testing
+
 → See `.agent/System/angular_unit_testing_guide.md`
 
 ✅ Mock all, use schemas, `data-testid`, `componentRef.setInput()`  
 ❌ NO `componentInstance` internals, `querySelector()`, manual lifecycle
 
 ### PrimeNG
+
 → See `.agent/System/primeng_best_practices.md`
 
 ✅ Use `p-button`, `p-inputtext`, `p-select`, `p-date-picker`, `#template`  
 ❌ NO directives (`pButton`, `pInputText`, `pDropdown`, `pTemplate`)
 
 ### Dark Mode
+
 → See `.agent/System/dark_mode_reference.md`
 
 ✅ PrimeNG surface colors (`surface-0` to `surface-950`), `dark:` prefix  
 ❌ NO Tailwind colors (`gray-*`), arbitrary colors, inline styles
 
 ### Responsive Design
+
 → See `.agent/System/responsive_design_guide.md`
 
 ✅ Mobile-first, Tailwind breakpoints (`sm:`, `md:`, `lg:`), min 44px touch targets  
 ❌ NO fixed widths without breakpoints, small text on mobile (< 16px)
 
 ### Architecture
+
 → See `.agent/System/project_architecture.md`
 
 ✅ Facade Pattern, Repository Pattern, Component Pattern (dumb/presentational)  
 ❌ NO business logic in components, NO direct HTTP in components
 
 ### Git
+
 → See `.agent/SOPs/git_commit_instructions.md`
 
 `feat:` | `fix:` | `docs:` | `refactor:` | `test:` | `chore:`
@@ -376,11 +408,13 @@ import { StoreStatus } from '@store/domain/enums/store-status.enum';
 **ESCOPO** é um **diretório de primeiro nível** dentro de `libs/` que agrupa bibliotecas relacionadas por contexto, funcionalidade ou domínio de negócio.
 
 ```
+
 libs/
-├── admin/        ← ESCOPO (agrupa libs do painel admin)
-├── auth/         ← ESCOPO (agrupa libs de autenticação)
-├── public/       ← ESCOPO (agrupa libs de páginas públicas)
-└── shared/       ← ESCOPO (agrupa libs compartilhadas)
+├── admin/ ← ESCOPO (agrupa libs do painel admin)
+├── auth/ ← ESCOPO (agrupa libs de autenticação)
+├── public/ ← ESCOPO (agrupa libs de páginas públicas)
+└── shared/ ← ESCOPO (agrupa libs compartilhadas)
+
 ```
 
 **Características do ESCOPO:**
@@ -396,21 +430,23 @@ libs/
 **LIB** é uma **biblioteca Nx real** que contém código executável, tem sua própria configuração e pode ser importada por outras libs ou apps.
 
 ```
+
 libs/admin/
-├── data-access/      ← LIB (biblioteca real)
-│   ├── project.json  ← Configuração Nx
-│   ├── src/
-│   │   ├── index.ts  ← Public API
-│   │   └── lib/      ← Código fonte
-│   └── tsconfig.json
-├── data-source/    ← LIB (biblioteca real)
-│   ├── project.json
-│   ├── src/
-│   │   ├── index.ts
-│   │   └── lib/
-│   └── tsconfig.json
-├── feature-dashboard/  ← LIB
-└── feature-users/      ← LIB
+├── data-access/ ← LIB (biblioteca real)
+│ ├── project.json ← Configuração Nx
+│ ├── src/
+│ │ ├── index.ts ← Public API
+│ │ └── lib/ ← Código fonte
+│ └── tsconfig.json
+├── data-source/ ← LIB (biblioteca real)
+│ ├── project.json
+│ ├── src/
+│ │ ├── index.ts
+│ │ └── lib/
+│ └── tsconfig.json
+├── feature-dashboard/ ← LIB
+└── feature-users/ ← LIB
+
 ```
 
 
@@ -429,15 +465,17 @@ Agrupam libs relacionadas a uma área específica da aplicação frontend.
 
 **Estrutura padrão:**
 ```
+
 libs/[escopo-aplicacao]/
-├── data-access/         # Facades e serviços
-├── data-source/         # Fontes de dados backend / DTOs com class-validator - sempre implementando as interfaces do domain
-├── domain/              # DTOs, Interfaces, Enums
-├── ui-components/      # Componentes UI (opcional)
-├── utils/               # Utilitários (opcional)
-├── feature-shell/       # Shell de rotas (opcional)
-├── feature-[name]/      # Features/páginas
-└── ...                  # Outras libs de features ou outros.
+├── data-access/ # Facades e serviços
+├── data-source/ # Fontes de dados backend / DTOs com class-validator - sempre implementando as interfaces do domain
+├── domain/ # DTOs, Interfaces, Enums
+├── ui-components/ # Componentes UI (opcional)
+├── utils/ # Utilitários (opcional)
+├── feature-shell/ # Shell de rotas (opcional)
+├── feature-[name]/ # Features/páginas
+└── ... # Outras libs de features ou outros.
+
 ```
 
 
@@ -462,12 +500,14 @@ libs/[escopo-aplicacao]/
 **Propósito:** Orquestração de rotas e configuração da aplicação.
 
 ```
+
 libs/web/shell/
 ├── src/lib/
-│   ├── public-shell.component.ts    # Shell rotas públicas
-│   ├── auth-shell.component.ts      # Shell rotas autenticadas
-│   └── routes.ts                    # Configuração de rotas
+│ ├── public-shell.component.ts # Shell rotas públicas
+│ ├── auth-shell.component.ts # Shell rotas autenticadas
+│ └── routes.ts # Configuração de rotas
 └── src/index.ts
+
 ```
 
 **Regras:**
@@ -484,17 +524,19 @@ libs/web/shell/
 **Propósito:** State management, facades, repositories (Frontend).
 
 ```
+
 libs/user/data-access/
 ├── src/lib/
-│   ├── facades/
-│   │   └── user.facade.ts           # State management com signals
-│   ├── repositories/
-│   │   └── user.repository.ts       # Abstração HTTP
-│   ├── services/
-│   │   └── user-validation.service.ts
-│   └── guards/
-│       └── user-auth.guard.ts
+│ ├── facades/
+│ │ └── user.facade.ts # State management com signals
+│ ├── repositories/
+│ │ └── user.repository.ts # Abstração HTTP
+│ ├── services/
+│ │ └── user-validation.service.ts
+│ └── guards/
+│ └── user-auth.guard.ts
 └── src/index.ts
+
 ```
 
 **Regras:**
@@ -513,16 +555,18 @@ libs/user/data-access/
 **Propósito:** Backend services, controllers, entities (NestJS).
 
 ```
+
 libs/user/data-source/
 ├── src/lib/
-│   ├── controllers/
-│   │   └── user.controller.ts       # REST endpoints
-│   ├── services/
-│   │   └── user.service.ts          # Business logic
-│   ├── entities/
-│   │   └── user.entity.ts           # TypeORM entity
-│   └── user.module.ts               # NestJS module
+│ ├── controllers/
+│ │ └── user.controller.ts # REST endpoints
+│ ├── services/
+│ │ └── user.service.ts # Business logic
+│ ├── entities/
+│ │ └── user.entity.ts # TypeORM entity
+│ └── user.module.ts # NestJS module
 └── src/index.ts
+
 ```
 
 **Regras:**
@@ -539,17 +583,19 @@ libs/user/data-source/
 **Propósito:** Modelos, DTOs, interfaces, enums compartilhados.
 
 ```
+
 libs/user/domain/
 ├── src/lib/
-│   ├── dtos/
-│   │   ├── user.dto.ts
-│   │   ├── create-user.dto.ts
-│   │   └── update-user.dto.ts
-│   ├── interfaces/
-│   │   └── user.interface.ts
-│   └── enums/
-│       └── user-status.enum.ts
+│ ├── dtos/
+│ │ ├── user.dto.ts
+│ │ ├── create-user.dto.ts
+│ │ └── update-user.dto.ts
+│ ├── interfaces/
+│ │ └── user.interface.ts
+│ └── enums/
+│ └── user-status.enum.ts
 └── src/index.ts
+
 ```
 
 **Regras:**
@@ -566,17 +612,19 @@ libs/user/domain/
 **Propósito:** Funções puras, helpers, constantes.
 
 ```
+
 libs/shared/utils/
 ├── src/lib/
-│   ├── formatters/
-│   │   ├── currency.util.ts
-│   │   └── date.util.ts
-│   ├── validators/
-│   │   └── cpf.validator.ts
-│   └── constants/
-│       └── regex.constants.ts
+│ ├── formatters/
+│ │ ├── currency.util.ts
+│ │ └── date.util.ts
+│ ├── validators/
+│ │ └── cpf.validator.ts
+│ └── constants/
+│ └── regex.constants.ts
 └── src/index.ts
-```
+
+````
 
 **Regras:**
 - ✅ PODE: ter funções puras
@@ -628,7 +676,7 @@ libs/shared/utils/
     "@project/web/shell": ["libs/web/shell/src/index.ts"]
   }
 }
-```
+````
 
 ---
 
@@ -708,6 +756,7 @@ All component logic and state management **MUST** be handled through the **Facad
 ### Facade Responsibilities
 
 Facades are responsible for:
+
 - ✅ Managing component state (using signals or state management)
 - ✅ Handling business logic
 - ✅ Orchestrating API calls via data-access services
@@ -717,6 +766,7 @@ Facades are responsible for:
 ### Component Responsibilities
 
 Components **must**:
+
 - ✅ Be presentational only (dumb/stateless)
 - ✅ Subscribe to facade observables/signals
 - ✅ Emit user actions back to the facade
@@ -728,6 +778,7 @@ Components **must**:
 ## ✅ Best Practices Checklist
 
 ### When Creating New Feature
+
 - [ ] Create facade in data-access library
 - [ ] Facade handles all business logic
 - [ ] Component only renders and emits events
@@ -736,12 +787,14 @@ Components **must**:
 - [ ] Facade tests mock data-access
 
 ### When Creating New Library
+
 - [ ] Tag library with correct type (`type:feature`, `type:ui`, etc.)
 - [ ] Verify dependencies follow rules
 - [ ] Run `nx lint` to check for violations
 - [ ] Document library purpose in README
 
 ### Code Review Checklist
+
 - [ ] No business logic in components
 - [ ] Components use facade pattern
 - [ ] Dependency graph follows rules
@@ -783,12 +836,7 @@ const count = 0; // initialize count to zero
  * @param periods - Number of compounding periods
  * @returns Final amount after interest
  */
-function calculateCompoundInterest(
-  principal: number,
-  rate: number,
-  periods: number
-): number {
+function calculateCompoundInterest(principal: number, rate: number, periods: number): number {
   return principal * Math.pow(1 + rate, periods);
 }
 ```
-
