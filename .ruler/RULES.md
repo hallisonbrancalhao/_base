@@ -270,6 +270,34 @@ mcpl verify                              # Test all servers are working
 
 ## ⚡ Essential Rules
 
+### 🚫 REGRAS CRÍTICAS — Não negociáveis
+
+#### 1. DTOs com decorators são EXCLUSIVAMENTE backend
+
+Frontend (`type:data-access`, `type:feature`, `type:ui`, `type:app` — `apps/web|mobile`) NUNCA importa `*.dto.ts` que contenha decorators de `class-validator`/`class-transformer`. Esses decorators chamam `Reflect.getMetadata` em runtime e quebram o boot do app no browser (Vite/esbuild + reflect-metadata IIFE).
+
+✅ FE consome: `interfaces/*.interface.ts`, `enums/`, `types/`, `schemas/` (Zod)
+❌ FE proibido: `dtos/*.dto.ts`, `dtos/*.decorator.ts`, pacotes `class-validator` e `class-transformer`
+
+**Sincronia BE↔FE:** toda classe DTO/Entity do BE faz `implements IXxx`.
+
+**Enforcement obrigatório** — `eslint.config.mjs` (`@nx/enforce-module-boundaries`):
+
+```js
+{ sourceTag: 'type:data-access', bannedExternalImports: ['class-validator', 'class-transformer'] },
+{ sourceTag: 'type:feature',     bannedExternalImports: ['class-validator', 'class-transformer'] },
+{ sourceTag: 'type:ui',          bannedExternalImports: ['class-validator', 'class-transformer'] },
+{ sourceTag: 'type:app',         bannedExternalImports: ['class-validator', 'class-transformer'] },
+```
+
+→ Detalhes em `.agent/System/interface-dto-architecture.md` e `.agent/System/nx_architecture_rules.md`.
+
+#### 2. Web é signal-first SEM zone.js
+
+`apps/web` usa `provideZonelessChangeDetection()`. Proibido `NgZone`, `zone.js`, `setTimeout` para forçar CD. Tudo via `signal()`, `computed()`, `effect()`, `input()`, `output()`.
+
+---
+
 ### BASE
 
 → See `.agent/System/base_rules.md`

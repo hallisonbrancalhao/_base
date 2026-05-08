@@ -6,6 +6,116 @@ This document describes the standard structure for organizing interfaces, DTOs, 
 
 ---
 
+## 🚫 REGRA CRÍTICA — Não negociável
+
+**DTOs com decorators de `class-validator` / `class-transformer` (`@Expose`, `@Type`, `@IsEmail`, `@IsEnum`, `@Transform`, `@ValidateBy`, etc.) são EXCLUSIVAMENTE backend.** O frontend (qualquer `data-access`, `feature-*`, `ui-*` ou `apps/web|mobile`) NUNCA importa um arquivo `*.dto.ts`.
+
+**O que o frontend pode importar de `@<scope>/domain`:**
+- ✅ `interfaces/*.interface.ts` — TypeScript puro, sem decorators
+- ✅ `enums/*.enum.ts`
+- ✅ `types/*.types.ts`
+- ✅ `schemas/*.schema.ts` (Zod — seguro no FE)
+- ❌ `dtos/*.dto.ts` — **PROIBIDO no FE**
+- ❌ `dtos/*.decorator.ts` — **PROIBIDO no FE**
+
+**Por que essa regra existe:** decorators de class-validator/class-transformer chamam `Reflect.getMetadata` em runtime. Quando o Vite/esbuild bundla o frontend, o pré-bundle envolve `reflect-metadata` num IIFE que escopa a global Reflect, resultando em `Uncaught TypeError: Reflect.getMetadata is not a function` no boot do app — bloqueando login e qualquer fluxo. Além disso, `class-validator` + `class-transformer` adicionam ~80 KB ao bundle FE sem benefício (FE não roda validação dessa forma).
+
+### ESLint enforcement (obrigatório)
+
+Configurar `@nx/enforce-module-boundaries` em `eslint.config.mjs` com `bannedExternalImports`:
+
+```js
+{ sourceTag: 'type:data-access', bannedExternalImports: ['class-validator', 'class-transformer'] },
+{ sourceTag: 'type:feature',     bannedExternalImports: ['class-validator', 'class-transformer'] },
+{ sourceTag: 'type:ui',          bannedExternalImports: ['class-validator', 'class-transformer'] },
+{ sourceTag: 'type:app',         bannedExternalImports: ['class-validator', 'class-transformer'] },
+```
+
+### Como aplicar
+
+#### 1. Toda classe DTO `implements` sua interface irmã
+
+```typescript
+// libs/auth/domain/src/lib/interfaces/identity.interface.ts
+export interface IIdentity {
+  readonly id: string;
+  readonly email: string;
+  readonly name: string;
+  readonly status: IdentityStatus;
+  readonly role: IdentityRole;
+}
+
+// libs/auth/domain/src/lib/dtos/identity.dto.ts
+import { Expose } from 'class-transformer';
+import { IIdentity } from '../interfaces/identity.interface';
+
+export class IdentityDto implements IIdentity {
+  @Expose() readonly id!: string;
+  @Expose() readonly email!: string;
+  @Expose() readonly name!: string;
+  @Expose() readonly status!: IdentityStatus;
+  @Expose() readonly role!: IdentityRole;
+}
+```
+
+A cláusula `implements IIdentity` mantém **sincronia compile-time** entre BE e FE: se a interface mudar, o TypeScript recusa o DTO desalinhado.
+
+#### 2. Entities (TypeORM) também `implements` a interface
+
+```typescript
+@Entity('identity')
+export class IdentityEntity implements IIdentity {
+  @PrimaryGeneratedColumn('uuid') id!: string;
+  @Column({ name: 'email_normalized' }) email!: string;
+}
+```
+
+#### 3. Repositories e Facades do FE consomem interfaces
+
+```typescript
+// libs/<scope>/data-access/src/lib/repositories/session.repository.ts
+import { IIdentity } from '@<scope>/domain/interfaces/identity.interface';
+import { ILoginRequest } from '@<scope>/domain/interfaces/login-request.interface';
+
+@Injectable()
+export class SessionRepository {
+  login(payload: ILoginRequest): Observable<{ identity: IIdentity }> { ... }
+}
+```
+
+#### 4. Controllers BE continuam usando DTOs classes
+
+NestJS `ValidationPipe` exige a classe (decorators), e o `ClassSerializerInterceptor` aplica `@Expose()` via `class-transformer` na resposta.
+
+### Re-export para `feature-*`
+
+`feature-*` libs não podem importar `@<scope>/domain/*` (boundary `type:feature` → `type:domain` é bloqueado). `data-access` deve expor um módulo `interfaces.ts` que re-exporta as interfaces necessárias:
+
+```typescript
+// libs/<scope>/data-access/src/lib/interfaces.ts
+export type { IIdentity } from '@<scope>/domain/interfaces/identity.interface';
+export type { ILoginRequest } from '@<scope>/domain/interfaces/login-request.interface';
+```
+
+Features consomem via path `@<scope>/data-access/interfaces`.
+
+### Bootstrap zoneless
+
+`apps/web/src/app/app.config.ts` deve usar `provideZonelessChangeDetection()`. Não há `zone.js` no `tsconfig.app.json:types` nem `import 'zone.js'` em `main.ts`. Componentes signal-first dispensam `zone.js` e ficam compatíveis com o pipeline de bundle livre de `reflect-metadata`.
+
+### Auditoria contínua
+
+Antes de qualquer commit que toque `data-access`, `feature-*`, `ui-*` ou `apps/web`:
+
+```bash
+grep -rn "from '@<scope>/domain/dtos\|/dtos/.*\.dto'" libs/<scope>/data-access libs/<scope>/feature-* apps/web 2>/dev/null
+# resultado deve ser VAZIO
+```
+
+Se aparecer match → migrar imediatamente para a interface antes de fazer review/merge.
+
+---
+
 ## Standard Domain Module Structure
 
 ```

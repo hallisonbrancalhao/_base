@@ -1,7 +1,7 @@
 # Nx Architecture Rules
 
-**Last update**: 2025-10-10
-**Version**: 1.0.0
+**Last update**: 2026-05-08
+**Version**: 1.1.0
 **Owner**: Architecture Team
 
 ---
@@ -9,6 +9,37 @@
 ## 📌 Summary
 
 This document defines the strict architectural rules for the Nx monorepo workspace, including library dependency constraints and the Facade Pattern for state management.
+
+---
+
+## 🚫 REGRA CRÍTICA — Imports DTO no FE
+
+`type:data-access`, `type:feature`, `type:ui` e `type:app` **NÃO PODEM** importar arquivos `*.dto.ts` que contenham decorators de `class-validator` ou `class-transformer`. Use as interfaces irmãs (`*.interface.ts`).
+
+**Por quê:** decorators de `class-validator`/`class-transformer` chamam `Reflect.getMetadata` em runtime. O Vite/esbuild pré-bundla `reflect-metadata` num IIFE que escopa a global Reflect incorretamente, quebrando o boot do app no browser com `Uncaught TypeError: Reflect.getMetadata is not a function`. Além disso, essas libs adicionam ~80 KB ao bundle FE sem benefício.
+
+**Configurar `bannedExternalImports`** em `eslint.config.mjs` (regra `@nx/enforce-module-boundaries`):
+
+```js
+{
+  sourceTag: 'type:data-access',
+  bannedExternalImports: ['class-validator', 'class-transformer'],
+},
+{
+  sourceTag: 'type:feature',
+  bannedExternalImports: ['class-validator', 'class-transformer'],
+},
+{
+  sourceTag: 'type:ui',
+  bannedExternalImports: ['class-validator', 'class-transformer'],
+},
+{
+  sourceTag: 'type:app',
+  bannedExternalImports: ['class-validator', 'class-transformer'],
+},
+```
+
+Detalhes em `.agent/System/interface-dto-architecture.md`.
 
 ---
 
