@@ -27,12 +27,21 @@ stack:
 .agent/
 ├── README.md          ← YOU ARE HERE
 ├── Agents/            ← Sub-agentes de desenvolvimento (15+)
-├── System/            ← Technical documentation
+├── System/            ← Technical documentation (regras, padrões)
 ├── Tasks/             ← PRDs, DEV_PRDs, Specs & templates
-│   ├── TEMPLATE_dev_prd.md   ← Template para developer PRDs
-│   └── TEMPLATE_spec.md      ← Template para specs executáveis
+│   ├── TEMPLATE_dev_prd.md
+│   └── TEMPLATE_spec.md
+├── Prompts/           ← Biblioteca de prompts versionados (4 categorias)
+│   ├── README.md      ← Índice completo
+│   ├── _context/      ← Blocos reutilizáveis (just-in-time)
+│   ├── _meta/         ← Princípios de context engineering + template
+│   ├── 01_two_way_interaction/
+│   ├── 02_code_review/       ← inclui explain-html ⭐
+│   ├── 03_design_prototypes/
+│   └── 04_reports_research/
+├── Plans/             ← Outputs persistentes (ADRs, reports, learning)
 └── SOPs/              ← Standard procedures
-    └── orchestration_workflow.md  ← Multi-task orchestration guide
+    └── orchestration_workflow.md
 ```
 
 ---
@@ -43,6 +52,7 @@ stack:
 
 | Document | Purpose |
 |----------|---------|
+| [Model Hierarchy](./System/model_hierarchy.md) | Model-per-role policy for agents/teams (fable/opus/sonnet/haiku) |
 | [TypeScript Clean Code](./System/typescript_clean_code.md) | Naming, functions, comments policy |
 | [Nx Architecture Rules](./System/nx_architecture_rules.md) | Lib dependencies & boundaries |
 | [Libs Architecture](./System/libs_architecture_pattern.md) | Scope/Lib structure |
@@ -74,6 +84,14 @@ stack:
 | [PRD Template](./Tasks/README.md) | Feature documentation |
 | [DEV_PRD Template](./Tasks/TEMPLATE_dev_prd.md) | Developer PRD structure |
 | [Spec Template](./Tasks/TEMPLATE_spec.md) | Executable spec structure |
+
+### P4 - Prompts Library
+
+| Document | Purpose |
+|----------|---------|
+| [Prompts README](./Prompts/README.md) | Índice completo de prompts |
+| [Context Engineering Principles](./Prompts/_meta/context_engineering_principles.md) | Princípios Anthropic aplicados |
+| [explain-html](./Prompts/02_code_review/explain-html.md) | Explicação visual em HTML autocontido ⭐ |
 
 ---
 

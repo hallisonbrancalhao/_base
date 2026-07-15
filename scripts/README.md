@@ -49,16 +49,24 @@ Atualiza projetos existentes com a configuração mais recente do `_base`. Difer
 ### O que é sincronizado
 
 ```
-.claude/agents/   → Agentes do pipeline de orquestração
-.claude/commands/  → Slash commands
-.claude/hooks/     → Scripts de hooks e setup
-.agent/SOPs/       → Procedimentos padrão
-.agent/Tasks/      → Templates (TEMPLATE_dev_prd.md, TEMPLATE_spec.md)
-.agent/System/     → Documentação técnica
-.agent/Agents/     → Sub-agentes de desenvolvimento
-.ruler/            → Regras de injeção
-CLAUDE.md          → Instruções principais
-.claudeignore      → Exclusões de contexto
+.claude/agents/      → Agentes do pipeline de orquestração
+.claude/commands/    → Slash commands
+.claude/hooks/       → Scripts de hooks e setup
+.claude/skills/      → Skills do Claude
+.agent/SOPs/         → Procedimentos padrão
+.agent/Tasks/        → Templates (TEMPLATE_dev_prd.md, TEMPLATE_spec.md)
+.agent/System/       → Documentação técnica
+.agent/Agents/       → Sub-agentes de desenvolvimento
+.agent/Prompts/      → Biblioteca de prompts (4 categorias + _context + _meta)
+                       ├── 01_two_way_interaction/
+                       ├── 02_code_review/   (inclui explain-html ⭐)
+                       ├── 03_design_prototypes/
+                       ├── 04_reports_research/
+                       ├── _context/  (blocos reutilizáveis)
+                       └── _meta/     (princípios + template)
+.ruler/              → Regras de injeção
+CLAUDE.md            → Instruções principais
+.claudeignore        → Exclusões de contexto
 ```
 
 ### Arquivos protegidos (nunca sobrescritos)

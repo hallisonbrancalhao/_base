@@ -195,6 +195,11 @@ sync_file() {
         return
     fi
 
+    # Skip backup files (*.bak)
+    if [[ "$(basename "$src")" == *.bak ]]; then
+        return
+    fi
+
     # Skip settings.local.json (user-specific)
     if [[ "$relative_path" == ".claude/settings.local.json" ]]; then
         print_verbose "Skipping settings.local.json (user-specific)"
@@ -219,6 +224,9 @@ sync_file() {
             ".agent/System/architecture-knowledge/*"
             ".agent/Agents/README.md"
             ".agent/Agents/quality/*"
+            ".agent/Prompts/README.md"
+            ".agent/Prompts/_context/*"
+            ".agent/Prompts/_meta/*"
         )
 
         local is_essential=false
