@@ -4,7 +4,7 @@ description: Convert approved DEV_PRDs into agent-executable spec files and mana
 
 # Spec Generator
 
-Você converte PRDs aprovadas em specs executáveis para agentes de implementação.
+Você é o lead (Fable): coordena a conversão de PRDs aprovadas em specs executáveis e faz o gate de qualidade. A conversão em si é do `spec-writer` (sonnet). Hierarquia: `.agent/System/model_hierarchy.md`.
 
 ## Input
 
@@ -35,23 +35,32 @@ Confirma a geração de specs para todas as PRDs listadas?
 
 ### Fase 2: Conversao em Paralelo
 
-Após confirmação, para cada PRD aprovada, spawne `spec-writer` em PARALELO:
+Após confirmação, para cada PRD aprovada, spawne `spec-writer` (sonnet via frontmatter) em PARALELO — uma mensagem, N Task calls:
 
 ```
-Use Task tool:
-  subagent_type: general-purpose
+Task tool:
+  subagent_type: spec-writer
   description: "Generate spec for WORK-XXXX"
   prompt: |
-    Read the agent definition at .claude/agents/spec-writer.md and follow its protocol exactly.
-
     PRD file to convert: .agent/Tasks/DEV_PRD_WORK_XXXX.md
 
     Read the PRD, verify it's approved, then create SPEC_WORK_XXXX.md following the template at .agent/Tasks/TEMPLATE_spec.md
 ```
 
+### Fase 2.5: Gate de Revisão (lead)
+
+Antes de apresentar, revise CADA spec gerada (você é o gate Fable):
+
+1. Paths citados existem no codebase (ou estão marcados como `criar`)? Spot-check com Glob
+2. Ações seguem ordem de dependência (domain → data-access → feature)?
+3. Seção de testes cobre todos os arquivos novos/modificados?
+4. Frontmatter completo (branch, base, status: pending)?
+
+Spec reprovada → re-spawne o `spec-writer` com o problema apontado. Máx 2 tentativas; depois escale para opus com o histórico.
+
 ### Fase 3: Apresentacao
 
-Após todas as specs serem criadas:
+Após todas as specs passarem no gate:
 
 ```markdown
 ## Specs Geradas
@@ -63,11 +72,9 @@ Após todas as specs serem criadas:
 
 ### Próximos passos:
 
-**Para implementar UMA spec por vez:**
-Execute `/task` e selecione a spec desejada
+**UMA spec:** `/task WORK-XXXX` (implementer sonnet + gates)
 
-**Para implementar MULTIPLAS specs em paralelo (Agent Teams):**
-Diga: "Crie um team com N teammates. Cada um implementa uma spec de .agent/Tasks/"
+**MÚLTIPLAS specs em paralelo:** `/task-team` (Agent Team: um implementer sonnet por spec em worktree isolado + qa-runner haiku + code-reviewer fable)
 
 **Para revisar uma spec antes de implementar:**
 Abra `SPEC_WORK_XXXX.md` em `.agent/Tasks/`
@@ -106,6 +113,7 @@ Confirma a exclusao das PRDs listadas?
 
 - NUNCA gere spec de PRD nao-aprovada
 - NUNCA delete PRDs sem confirmacao explicita do usuario
-- SEMPRE verifique paths contra o codebase real antes de escrever specs
+- SEMPRE spawne pelo `subagent_type: spec-writer` (modelo vem do frontmatter) — nunca general-purpose
 - SEMPRE spawne spec-writers em paralelo para multiplas PRDs
+- SEMPRE execute o gate da Fase 2.5 antes de apresentar as specs
 - SEMPRE apresente confirmacao antes de cada fase destrutiva (delete)

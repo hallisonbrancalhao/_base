@@ -18,22 +18,19 @@ Invoke the code reviewer agent on recent changes.
 git diff --name-only HEAD~1
 ```
 
-### 2. Invoke Code Reviewer
+### 2. Invoke Code Reviewer (fable)
 
 ```
-@code-reviewer
-  task: Review code changes
-  context: $ARGUMENTS or git diff files
-  focus: All standards (TypeScript, Angular, Architecture)
+Task tool:
+  subagent_type: code-reviewer
+  description: "Review changes"
+  prompt: |
+    Review the diff: $ARGUMENTS (default: git diff HEAD~1).
+    Focus: all standards (TypeScript, Angular, Architecture).
+    Return verdict + findings by severity.
 ```
 
-### 3. Required Reading
-
-Before reviewing, reference these files:
-- `.agent/System/typescript_clean_code.md`
-- `.agent/System/angular_full.md`
-- `.agent/System/primeng_best_practices.md`
-- `.agent/System/libs_architecture_pattern.md`
+O agente carrega o context pack e as docs de referência por conta própria (just-in-time via doc_references.md).
 
 ## Review Checklist
 

@@ -5,7 +5,7 @@ description: >
   prose and produces precise, actionable instructions for implementation agents.
   Triggered by /spec command after PRDs are approved.
 tools: Read, Write, Edit, Glob, Grep
-model: opus
+model: sonnet
 permissionMode: acceptEdits
 maxTurns: 15
 memory: project
@@ -19,9 +19,9 @@ Convert a human-readable DEV_PRD into a precise, unambiguous spec that an implem
 
 ## Protocol
 
-### Step 1: Read the Template
+### Step 1: Read the Template + Context Pack
 
-Read `.agent/Tasks/TEMPLATE_spec.md` to get the exact structure and frontmatter format.
+Read in ONE batch: `.agent/Tasks/TEMPLATE_spec.md`, `.agent/Prompts/_context/tech_stack.md`, `.agent/Prompts/_context/critical_rules.md`. Load further docs from `.agent/Prompts/_context/doc_references.md` only if the task needs them.
 
 ### Step 2: Read the Approved PRD
 

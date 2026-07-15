@@ -52,13 +52,19 @@ Launches Agent Teams to implement multiple specs in parallel (isolated worktrees
 Specialized agents for the multi-task orchestration workflow:
 
 ```
-.claude/agents/
-├── orchestrator.md            ← Classifies tasks, coordinates agents
-├── bug-investigator.md        ← Investigates bugs (root cause, data flow)
-├── enhancement-analyst.md     ← Analyzes enhancements (business rules, reuse)
-├── prd-writer.md              ← Creates human-readable DEV_PRDs
-├── spec-writer.md             ← Converts PRDs into executable specs
-└── implementer.md             ← Teammate that implements 1 spec end-to-end
+.claude/agents/                  (modelo via frontmatter — ver .agent/System/model_hierarchy.md)
+├── orchestrator.md      fable  ← Classifies tasks, coordinates agents
+├── prd-writer.md        fable  ← Creates human-readable DEV_PRDs
+├── code-reviewer.md     fable  ← Review gate (diffs vs standards)
+├── bug-investigator.md  opus   ← Investigates bugs (root cause, data flow)
+├── enhancement-analyst.md opus ← Analyzes enhancements (business rules, reuse)
+├── pentester.md         opus   ← Offensive security audit
+├── performance-auditor.md opus ← N+1, race conditions, memory leaks
+├── security-auditor.md  opus   ← SAST, secrets, SCA, pinning
+├── architecture-reviewer.md opus ← Tradeoffs, reliability, DR
+├── spec-writer.md       sonnet ← Converts PRDs into executable specs
+├── implementer.md       sonnet ← Teammate that implements 1 spec end-to-end
+└── qa-runner.md         haiku  ← Mechanical lint/test/build pipeline
 ```
 
 ### Development Agents (`.agent/Agents/`)
@@ -140,42 +146,37 @@ Task:
 
 ## Available Sub-Agent Types
 
-### Task Tool Agents
+### Task Tool Agents (built-in)
 
 | subagent_type | Purpose | Tools Available |
 |---------------|---------|-----------------|
-| `Explore` | Fast codebase exploration | Glob, Grep, Read |
+| `Explore` | Fast codebase exploration (cheap, high-volume) | Read-only |
 | `Plan` | Architecture planning | All read-only tools |
-| `general-purpose` | Multi-step tasks, agent invocation | All tools |
-| `code-reviewer` | Code review | Read, Grep, Glob |
+| `general-purpose` | Multi-step tasks without a dedicated agent | All tools |
 
-### Orchestration Agents (`.claude/agents/`)
+### Project Agents (`.claude/agents/`) — spawn by `subagent_type`
 
-| Agent | Trigger | Purpose |
-|-------|---------|---------|
-| `orchestrator` | `/orchestrate` | Classifies tasks, spawns specialists in parallel |
-| `bug-investigator` | Bug tasks | Gathers error context, traces root cause |
-| `enhancement-analyst` | Enhancement tasks | Consults business rules, identifies reuse |
-| `prd-writer` | After analysis | Creates human-readable DEV_PRDs |
-| `spec-writer` | After PRD approval | Converts PRDs into executable specs |
-| `implementer` | `/task-team` | Implements 1 spec end-to-end in isolated worktree |
+| Agent | Model | Trigger | Purpose |
+|-------|-------|---------|---------|
+| `orchestrator` | fable | `/orchestrate` | Classifies tasks, spawns specialists in parallel |
+| `prd-writer` | fable | After analysis | Creates human-readable DEV_PRDs |
+| `code-reviewer` | fable | `/task`, `/task-team`, `/validate` | Review gate on diffs |
+| `bug-investigator` | opus | Bug tasks | Gathers error context, traces root cause |
+| `enhancement-analyst` | opus | Enhancement tasks | Consults business rules, identifies reuse |
+| `pentester` | opus | `/pentest` | Offensive security audit |
+| `performance-auditor` | opus | `/audit-report` | N+1, race conditions, memory leaks |
+| `security-auditor` | opus | `/audit-report` | SAST, secrets, SCA, pinning |
+| `architecture-reviewer` | opus | `/audit-report` | Tradeoffs, reliability, DR |
+| `spec-writer` | sonnet | After PRD approval | Converts PRDs into executable specs |
+| `implementer` | sonnet | `/task`, `/task-team` | Implements 1 spec end-to-end |
+| `qa-runner` | haiku | `/validate`, gates | Mechanical lint/test/build pipeline |
 
-### Using Agent Definitions
-For `general-purpose` agents, reference agent files:
+### Spawn Rules
 
-```markdown
-Task:
-  subagent_type: general-purpose
-  prompt: |
-    Read .agent/Agents/design/@ui-designer.md
-
-    Then create UI specs for:
-    - Dashboard card component
-    - Mobile-first responsive
-    - Dark mode support
-
-    Output: Component template with PrimeNG
-```
+1. **Project agents**: spawn by `subagent_type` matching the agent name — the model, tools and limits come from the agent's frontmatter. NEVER use `general-purpose` + "read the agent definition" (that bypasses the frontmatter).
+2. **Mechanical skills without a dedicated agent** (`git-operator`, `import-fixer`, `nx-operator`, `domain-scaffolder`): spawn `general-purpose` with `model: haiku` and prompt "Read `.claude/skills/[name]/SKILL.md` and execute it for: [task]".
+3. **Reference agents in `.agent/Agents/`** (design, ux): spawn `general-purpose` with the file reference — these have no frontmatter and inherit the session model unless you pass `model:`.
+4. **Context pack**: every spawned agent prompt includes — "Read in ONE batch: `.agent/Prompts/_context/tech_stack.md`, `critical_rules.md`, `doc_references.md`".
 
 ---
 
@@ -201,23 +202,19 @@ Task:
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Phase 2: Implementation (Sequential)
+### Phase 2: Implementation (Spec Pipeline — preferred)
 
 ```
-@nx-operator      → Generate libs
+/spec                      spec-writer (sonnet) + gate do lead (fable)
        ↓
-@coder (domain)   → Interfaces, DTOs
+/task | /task-team         implementer(s) (sonnet) [worktree se ≥ 2]
        ↓
-@coder (data)     → Facades, repositories
+qa-runner (haiku)          lint, test, build agregado
        ↓
-@coder (feature)  → Components
-       ↓
-@test-writer      → Unit tests
-       ↓
-@qa-runner        → lint, test, build
-       ↓
-@git-operator     → Commit
+code-reviewer (fable)      review gate → merge/commit
 ```
+
+Manual pipeline (ad-hoc, sem spec): `@nx-operator` (haiku) → `@coder` (sonnet) → `@test-writer` (sonnet) → `qa-runner` (haiku) → `@git-operator` (haiku), sempre com review do lead ao final.
 
 ---
 
@@ -238,15 +235,15 @@ Task:
 | Write tests | `@test-writer` | `general-purpose` |
 | Generate libs | `@nx-operator` | `general-purpose` |
 | **Quality** |||
-| Run validations | `@qa-runner` | `general-purpose` |
-| Review code | `@code-reviewer` | `code-reviewer` |
-| Audit performance (N+1, race, leak) | `@performance-auditor` | `general-purpose` |
-| Audit security (SAST, secrets, SCA) | `@security-auditor` | `general-purpose` |
-| Review architecture (tradeoffs, DR) | `@architecture-reviewer` | `general-purpose` |
+| Run validations | `qa-runner` (haiku) | `qa-runner` |
+| Review code | `code-reviewer` (fable) | `code-reviewer` |
+| Audit performance (N+1, race, leak) | `performance-auditor` (opus) | `performance-auditor` |
+| Audit security (SAST, secrets, SCA) | `security-auditor` (opus) | `security-auditor` |
+| Review architecture (tradeoffs, DR) | `architecture-reviewer` (opus) | `architecture-reviewer` |
 | Complete AI-Guard report | `/audit-report` | Slash command |
 | **Operations** |||
-| Create commit | `@git-operator` | `general-purpose` |
-| Debug issue | `@debugger` | `general-purpose` |
+| Create commit | `@git-operator` skill | `general-purpose` + `model: haiku` |
+| Debug issue | `bug-investigator` (opus) | `bug-investigator` |
 
 ---
 
@@ -342,10 +339,11 @@ Task 2 (subagent_type: Plan):
 ## Rules
 
 1. **Use Task tool for agents** - Never try to invoke agents directly in conversation
-2. **Parallel when possible** - Launch independent agents simultaneously
-3. **Sequential when dependent** - Wait for results when next step needs them
-4. **Always validate** - Run `@qa-runner` before any commit
-5. **Reference agent files** - Use `Read .agent/Agents/...` for context
+2. **Spawn by subagent_type** - Project agents by name (model comes from frontmatter); never `general-purpose` + "read the agent definition"
+3. **Follow the model hierarchy** - fable plans/reviews, opus investigates, sonnet executes, haiku does mechanical work (`.agent/System/model_hierarchy.md`)
+4. **Parallel when possible** - ≥ 2 independent units → team with one teammate each; dependencies → `blockedBy`
+5. **Always gate** - `qa-runner` (haiku) + `code-reviewer` (fable) before any done/merge
+6. **Context pack in every spawn** - `.agent/Prompts/_context/` (tech_stack + critical_rules + doc_references, 1 batch)
 
 ---
 

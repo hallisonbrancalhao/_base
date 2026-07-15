@@ -32,15 +32,18 @@ Systematically investigate and fix issues.
 
 ### Phase 2: Analyze
 
-Use the @debugger agent for deep analysis:
+Spawne o `bug-investigator` (opus via frontmatter) para análise profunda:
 
 ```
-Task (subagent_type: general-purpose):
+Task tool:
+  subagent_type: bug-investigator
+  description: "Investigate issue"
   prompt: |
-    Read .agent/Agents/analysis/@debugger.md
-
     Investigate this issue:
     $ARGUMENTS
+
+    Context pack — leia em UM batch antes de qualquer coisa:
+    .agent/Prompts/_context/tech_stack.md, .agent/Prompts/_context/critical_rules.md, .agent/Prompts/_context/doc_references.md
 
     Analyze:
     1. Root cause identification

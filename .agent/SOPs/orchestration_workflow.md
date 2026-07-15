@@ -2,12 +2,12 @@
 
 ## Visão Geral
 
-O sistema de orquestracao permite analisar, planejar e implementar multiplas tasks (WORK-xxxx) em paralelo usando agentes especializados.
+O sistema de orquestracao permite analisar, planejar e implementar multiplas tasks (WORK-xxxx) em paralelo usando agentes especializados, seguindo a hierarquia de modelos (`.agent/System/model_hierarchy.md`): **fable** planeja/revisa, **opus** investiga, **sonnet** executa, **haiku** faz o bracal.
 
 ## Fluxo Completo
 
 ```
-/orchestrate WORK-1234 WORK-1235 WORK-1236
+/orchestrate WORK-1234 WORK-1235 WORK-1236      [lead: fable]
         |
         v
   [Classificacao: bug / enhancement / feature]
@@ -15,26 +15,29 @@ O sistema de orquestracao permite analisar, planejar e implementar multiplas tas
    +---------+---------+
    |         |         |
    v         v         v
- bug-      enhance-   explore +
- investigator ment-analyst arch-validate
+ bug-      enhance-   Explore +
+ investigator ment-analyst Plan          [opus | opus | built-in]
    |         |         |
    v         v         v
   [Analise estruturada por task]
         |
         v
-  [prd-writer cria DEV_PRD para cada task]
+  [prd-writer cria DEV_PRD para cada task]       [fable]
         |
         v
   [REVIEW HUMANO — dev le e aprova cada PRD]
         |
         v
-  /spec (converte PRDs aprovadas em specs)
+  /spec (spec-writer paralelo + gate do lead)    [sonnet + fable]
         |
         v
   [SPEC_WORK_XXXX.md para cada task]
         |
         v
-  [Implementacao: /task (individual) ou /task-team (paralelo)]
+  /task (1 spec) ou /task-team (>= 2, worktrees) [implementer sonnet]
+        |
+        v
+  [Gates: qa-runner (haiku) -> code-reviewer (fable) -> merge]
         |
         v
   [Cleanup: PRDs deletadas, specs marcadas done]
@@ -83,12 +86,12 @@ Implementa multiplas specs em paralelo usando Agent Teams:
 
 O comando vai:
 1. Listar specs pendentes em `.agent/Tasks/`
-2. Verificar conflitos de arquivos entre specs
-3. Criar um team com `TeamCreate`
-4. Criar tasks compartilhadas com `TaskCreate` (contendo a spec completa)
-5. Spawnar um teammate por spec com `isolation: worktree`
-6. Monitorar progresso e repassar mensagens
-7. Fazer cleanup ao finalizar
+2. Converter conflitos de arquivos em dependencias (`blockedBy`) — specs conflitantes rodam no mesmo team, em cadeia
+3. Criar tasks compartilhadas com `TaskCreate` (spec completa + context pack) — o team e implicito na sessao (nao existe TeamCreate)
+4. Spawnar um teammate `implementer` (sonnet) por spec com `isolation: worktree`
+5. Monitorar progresso e repassar mensagens; escalar 1 tier apos 2 falhas
+6. Integrar: merge dos worktrees na base + QA agregado via `qa-runner` (haiku)
+7. Review gate via `code-reviewer` (fable); shutdown + cleanup ao finalizar
 
 **Controles durante execucao:**
 - `Shift+Down`: alternar entre teammates
@@ -99,14 +102,18 @@ O comando vai:
 
 ## Tipos de Agentes
 
-| Agente | Quando Usado | O que Faz |
-|--------|-------------|-----------|
-| `orchestrator` | /orchestrate | Classifica tasks, coordena agents |
-| `bug-investigator` | Task tipo bug | Investiga root cause, traca data flow |
-| `enhancement-analyst` | Task tipo enhancement | Consulta business rules, mapeia reuso |
-| `prd-writer` | Apos analise | Cria PRD legivel para dev review |
-| `spec-writer` | Apos aprovacao | Transforma PRD em spec executavel |
-| `implementer` | /task-team | Teammate que implementa 1 spec end-to-end |
+| Agente | Modelo | Quando Usado | O que Faz |
+|--------|--------|-------------|-----------|
+| `orchestrator` | fable | /orchestrate | Classifica tasks, coordena agents |
+| `bug-investigator` | opus | Task tipo bug | Investiga root cause, traca data flow |
+| `enhancement-analyst` | opus | Task tipo enhancement | Consulta business rules, mapeia reuso |
+| `prd-writer` | fable | Apos analise | Cria PRD legivel para dev review |
+| `spec-writer` | sonnet | Apos aprovacao | Transforma PRD em spec executavel |
+| `implementer` | sonnet | /task, /task-team | Teammate que implementa 1 spec end-to-end |
+| `qa-runner` | haiku | Gates, /validate | Roda lint/test/build e reporta (nunca corrige) |
+| `code-reviewer` | fable | Gates, /validate | Review de diff com veredicto por severidade |
+
+Spawn SEMPRE pelo `subagent_type` do agente — o modelo vem do frontmatter. Nunca `general-purpose` + "read the agent definition".
 
 ## Ciclo de Vida dos Arquivos
 

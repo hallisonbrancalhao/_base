@@ -5,7 +5,7 @@ description: >
   optimized for human review with visible decisions and rationale. Uses TEMPLATE_dev_prd.md.
   Triggered by orchestrator after analysis agents complete their work.
 tools: Read, Write, Edit, Glob, Grep
-model: opus
+model: fable
 permissionMode: acceptEdits
 maxTurns: 15
 memory: project
@@ -19,9 +19,9 @@ Create a PRD that a human developer can read in 5 minutes and confidently approv
 
 ## Protocol
 
-### Step 1: Read Template
+### Step 1: Read Template + Context Pack
 
-Read `.agent/Tasks/TEMPLATE_dev_prd.md` to get the exact structure.
+Read in ONE batch: `.agent/Tasks/TEMPLATE_dev_prd.md`, `.agent/Prompts/_context/tech_stack.md`, `.agent/Prompts/_context/critical_rules.md`. Load further docs from `.agent/Prompts/_context/doc_references.md` only if the task needs them.
 
 ### Step 2: Extract from Analysis
 

@@ -30,32 +30,25 @@ Executa auditoria completa do projeto usando 3 especialistas em paralelo para de
 
 ## Protocolo de Execução
 
-### Fase 1 — Análise Paralela (3 agents simultâneos)
+### Fase 1 — Análise Paralela (3 agents opus simultâneos)
 
-Spawne os 3 agents via Task tool em **uma única mensagem** (todos em paralelo):
+Spawne os 3 agents via Task tool em **uma única mensagem** (todos em paralelo). Spawne pelo `subagent_type` — o modelo (opus) vem do frontmatter de cada agente:
 
-**Agent 1 — Performance**:
 ```
-@performance-auditor
-  task: Auditar performance do escopo $ARGUMENTS
-  scope: $ARGUMENTS ou affected
-  detectors: all
-```
+Task tool (1):
+  subagent_type: performance-auditor
+  description: "Performance audit"
+  prompt: "Audite performance do escopo: $ARGUMENTS (default: affected). Detectors: all (N+1, race, leak)."
 
-**Agent 2 — Segurança**:
-```
-@security-auditor
-  task: Auditar segurança do escopo $ARGUMENTS
-  scope: $ARGUMENTS ou affected
-  checks: all
-```
+Task tool (2):
+  subagent_type: security-auditor
+  description: "Security audit"
+  prompt: "Audite segurança do escopo: $ARGUMENTS (default: affected). Checks: all (SAST, secrets, SCA, pinning)."
 
-**Agent 3 — Arquitetura**:
-```
-@architecture-reviewer
-  task: Revisar arquitetura do escopo $ARGUMENTS
-  scope: $ARGUMENTS ou affected
-  pillars: all
+Task tool (3):
+  subagent_type: architecture-reviewer
+  description: "Architecture review"
+  prompt: "Revise arquitetura do escopo: $ARGUMENTS (default: affected). Pillars: all (tradeoffs, confiabilidade, contingências)."
 ```
 
 ### Fase 2 — Agregação

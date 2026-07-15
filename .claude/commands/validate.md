@@ -1,6 +1,6 @@
 # /validate - Post-Implementation Validation
 
-Run full validation pipeline after implementation.
+Pipeline de validação pós-implementação. Você é o lead (Fable) — delega o braçal e consolida. Hierarquia: `.agent/System/model_hierarchy.md`.
 
 ## Usage
 
@@ -12,94 +12,56 @@ Run full validation pipeline after implementation.
 
 ## Steps
 
-Execute in order:
-
-### 1. Run QA Pipeline
+### 1. QA Pipeline — `qa-runner` (haiku)
 
 ```
-@qa-runner
-  task: Validate implementation
-  scope: $ARGUMENTS or affected
-  checks: all
-  fix: false
+Task tool:
+  subagent_type: qa-runner
+  description: "QA pipeline"
+  prompt: |
+    Run the pipeline for scope: $ARGUMENTS (default: affected, base HEAD~1).
+    Report failures per project. Do not fix anything.
 ```
 
-### 2. Code Review
+### 2. Code Review — `code-reviewer` (fable)
+
+Em paralelo com o passo 1 (mesma mensagem):
 
 ```
-@code-reviewer
-  task: Review recent changes
-  context: Changed files from git diff
-  focus: All standards
+Task tool:
+  subagent_type: code-reviewer
+  description: "Review recent changes"
+  prompt: |
+    Review the diff: git diff HEAD~1 (ou o range do scope).
+    Return verdict + findings by severity.
 ```
 
-### 3. Architecture Validation (if libs changed)
+> Boundaries de arquitetura (tags/dependency matrix) já são cobertos pelo lint do Nx no passo 1; violações estruturais aparecem no review do passo 2.
 
-```
-@arch-validator
-  task: Validate architecture compliance
-  context: Changed libs
-```
+### 3. AI-Guard (opcional — recomendado antes de release)
 
-### 4. AI-Guard (Performance + Segurança + Arquitetura)
-
-> Recomendado antes de release e após merges grandes gerados por IA.
-> Executa 3 agents em paralelo via `/audit-report`.
-
-```
-/audit-report $ARGUMENTS
-```
-
-Ou manualmente via Task tool, em **paralelo** (1 mensagem com 3 Task calls):
-
-```
-@performance-auditor  detectors: all  scope: $ARGUMENTS
-@security-auditor     checks: all     scope: $ARGUMENTS
-@architecture-reviewer pillars: all   scope: $ARGUMENTS
-```
-
-## Commands to Execute
-
-```bash
-# Get changed files
-git diff --name-only HEAD~1
-
-# Run lint
-npx nx affected:lint --base=HEAD~1
-
-# Run tests
-npx nx affected:test --base=HEAD~1
-
-# Run build
-npx nx affected:build --base=HEAD~1
-```
+3 auditores opus em paralelo via `/audit-report $ARGUMENTS` (performance + segurança + arquitetura).
 
 ## Output
-
-Provide a summary report:
 
 ```markdown
 ## Validation Report
 
-### QA Results
+### QA (qa-runner)
 | Check | Status |
 |-------|--------|
 | Lint  | ✅/❌ |
 | Test  | ✅/❌ |
 | Build | ✅/❌ |
 
-### Code Review
-- Issues found: [count]
-- Severity: [summary]
+### Code Review (code-reviewer)
+- Veredicto: APPROVE / APPROVE_WITH_NOTES / REQUEST_CHANGES
+- Findings: critical=X, high=X, medium=X
 
-### Architecture
-- Compliance: ✅/❌
-
-### AI-Guard (Performance / Segurança / Arquitetura)
-- Performance findings: critical=X, high=X
-- Security findings: critical=X, high=X
-- Architecture gaps: critical=X, high=X
-- Relatório completo: `.agent/Tasks/audit-reports/YYYY-MM-DD-audit-report.md`
+### AI-Guard (se executado)
+- Relatório: `.agent/Tasks/audit-reports/YYYY-MM-DD-audit-report.md`
 
 ### Overall: PASS/FAIL
 ```
+
+FAIL → devolva os findings ao implementer responsável (ou corrija via `/task`); re-rode `/validate` após o fix.

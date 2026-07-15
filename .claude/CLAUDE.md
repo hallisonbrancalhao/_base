@@ -33,6 +33,26 @@ All tasks **MUST** be delegated to specialized sub-agents. The primary agent act
 
 ---
 
+### Model Hierarchy (obrigatório em todo spawn)
+
+> Política completa: `.agent/System/model_hierarchy.md`
+
+| Tier | Modelo   | Papel                            | Onde                                                                     |
+| ---- | -------- | -------------------------------- | ------------------------------------------------------------------------ |
+| 1    | `fable`  | Planejar + revisar (lead, gates) | sessão principal, `orchestrator`, `prd-writer`, `code-reviewer`           |
+| 2    | `opus`   | Raciocínio profundo              | `bug-investigator`, `enhancement-analyst`, `pentester`, auditores AI-Guard |
+| 3    | `sonnet` | Execução do planejado            | `implementer`, `spec-writer`                                              |
+| 4    | `haiku`  | Braçal mecânico                  | `qa-runner`; skills mecânicas via `general-purpose` + `model: haiku`      |
+
+**Regras de spawn:**
+
+- Spawne pelo `subagent_type` do agente (`.claude/agents/`) — NUNCA `general-purpose` + "read the agent definition" (descarta model/tools/limites do agente)
+- Todo subagente recebe o context pack em 1 batch: `.agent/Prompts/_context/` (tech_stack + critical_rules + doc_references)
+- ≥ 2 unidades de trabalho independentes → Agent Team em paralelo (`/task-team`); dependências → `blockedBy`; 1 unidade → agente único
+- Toda implementação passa pelos gates: `qa-runner` (haiku) → `code-reviewer` (fable)
+
+---
+
 ## 📁 Overview
 
 The `.agent/` folder contains all critical project documentation organized to provide complete context to developers and AI assistants. This documentation is separate from code but essential for understanding the project.

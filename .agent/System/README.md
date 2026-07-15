@@ -10,6 +10,7 @@ Technical documentation for AI agents and developers.
 
 | Doc | Purpose | Priority |
 |-----|---------|----------|
+| [model_hierarchy.md](./model_hierarchy.md) | Model-per-role policy for agents/teams (fable/opus/sonnet/haiku) | P0 |
 | [base_rules.md](./base_rules.md) | Fundamental coding rules | P0 |
 | [libs_architecture_pattern.md](./libs_architecture_pattern.md) | Nx lib structure (Scope/Lib) | P0 |
 | [nx_architecture_rules.md](./nx_architecture_rules.md) | Module boundaries & tags | P0 |
